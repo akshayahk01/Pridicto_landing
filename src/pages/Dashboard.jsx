@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import Navbar from '../components/Navbar';
-import Footer from '../components/Footer';
+import Layout from '../components/Layout';
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContainer, LineChart, Line } from 'recharts';
 import { FaDownload, FaBalanceScale } from 'react-icons/fa';
 
@@ -51,9 +50,9 @@ export default function Dashboard() {
   const COLORS = ['#6366f1', '#10b981', '#f59e0b', '#ef4444'];
 
   return (
-    <div className={`min-h-screen transition-colors duration-500 ${dark ? 'bg-slate-900 text-gray-100':'bg-white text-gray-800'}`}>
-      <Navbar dark={dark} setDark={setDark} />
-      <main className="pt-28 pb-16 max-w-7xl mx-auto px-6 space-y-12">
+    <Layout>
+      <div className={`min-h-screen transition-colors duration-500 ${dark ? 'bg-slate-900 text-gray-100':'bg-white text-gray-800'}`}>
+        <main className="pt-28 pb-16 max-w-7xl mx-auto px-6 space-y-12">
         <div className="text-center">
           <h1 className="text-4xl font-bold">Your Estimation Dashboard</h1>
           <p className="text-gray-500 dark:text-gray-300 mt-2">View your project estimates and insights.</p>
@@ -128,8 +127,8 @@ export default function Dashboard() {
             </div>
           </>
         )}
-      </main>
-      <Footer/>
-    </div>
+        </main>
+      </div>
+    </Layout>
   );
 }

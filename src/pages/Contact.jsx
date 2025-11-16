@@ -1,15 +1,14 @@
 import React from 'react';
-import Navbar from '../components/Navbar';
-import Footer from '../components/Footer';
+import Layout from '../components/Layout';
 import ContactForm from '../components/ContactForm';
 import ScheduleMeeting from '../components/ScheduleMeeting';
 import { motion } from 'framer-motion';
 
 export default function Contact(){
   return (
-    <div className="min-h-screen bg-white dark:bg-slate-900 text-gray-800 dark:text-gray-100">
-      <Navbar />
-      <main className="pt-28 max-w-7xl mx-auto px-6 pb-16 space-y-12">
+    <Layout>
+      <div className="min-h-screen bg-white dark:bg-slate-900 text-gray-800 dark:text-gray-100">
+        <main className="pt-28 max-w-7xl mx-auto px-6 pb-16 space-y-12">
         <motion.section initial={{opacity:0,y:30}} animate={{opacity:1,y:0}} className="text-center">
           <h1 className="text-4xl font-extrabold">Get in <span className="text-indigo-600">Touch</span></h1>
           <p className="text-gray-500 dark:text-gray-300 mt-2">We'd love to hear from you. Send us a message and we'll respond as soon as possible.</p>
@@ -42,8 +41,8 @@ export default function Contact(){
             <ScheduleMeeting />
           </div>
         </section>
-      </main>
-      <Footer/>
-    </div>
+        </main>
+      </div>
+    </Layout>
   );
 }

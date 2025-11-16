@@ -1,6 +1,5 @@
 import React from 'react';
-import Navbar from '../components/Navbar';
-import Footer from '../components/Footer';
+import Layout from '../components/Layout';
 import Breadcrumb from '../components/Breadcrumb';
 import ServiceCard from '../components/ServiceCard';
 import { motion } from 'framer-motion';
@@ -98,9 +97,9 @@ export default function Services() {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-indigo-50 via-white to-indigo-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 text-gray-800 dark:text-gray-100">
-      <Navbar />
-      <main className="pt-28 max-w-7xl mx-auto px-6 pb-16 space-y-12">
+    <Layout>
+      <div className="min-h-screen bg-gradient-to-b from-indigo-50 via-white to-indigo-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 text-gray-800 dark:text-gray-100">
+        <main className="pt-28 max-w-7xl mx-auto px-6 pb-16 space-y-12">
         <Breadcrumb />
         <motion.section
           initial={{ opacity: 0, y: 30 }}
@@ -132,13 +131,15 @@ export default function Services() {
                 icon={service.icon}
                 title={service.title}
                 description={service.description}
+                pricing={service.pricing}
+                features={service.features}
                 onLearnMore={() => navigate(`/services/${service.id}`)}
               />
             </motion.div>
           ))}
         </motion.section>
-      </main>
-      <Footer />
-    </div>
+        </main>
+      </div>
+    </Layout>
   );
 }

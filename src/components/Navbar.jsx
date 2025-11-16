@@ -121,8 +121,8 @@ export default function Navbar({ dark: propDark, setDark: propSetDark }) {
 
         {/* Mobile Navigation Menu */}
         {isMobileMenuOpen && (
-          <div className="md:hidden bg-white dark:bg-slate-800 border-t border-gray-200 dark:border-slate-700">
-            <div className="px-6 py-4 space-y-3">
+          <div className="md:hidden fixed inset-0 top-20 bg-white dark:bg-slate-800 border-t border-gray-200 dark:border-slate-700 shadow-lg z-50">
+            <div className="px-6 py-4 space-y-3 max-h-[calc(100vh-5rem)] overflow-y-auto">
               <Link to="/home" className="block py-2 hover:text-indigo-500 transition-colors" onClick={closeMobileMenu}>Home</Link>
               <Link to="/about" className="block py-2 hover:text-indigo-500 transition-colors" onClick={closeMobileMenu}>About</Link>
               <Link to="/services" className="block py-2 hover:text-indigo-500 transition-colors" onClick={closeMobileMenu}>Services</Link>

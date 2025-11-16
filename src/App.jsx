@@ -6,8 +6,8 @@ import ErrorBoundary from './components/ErrorBoundary';
 import LoadingSpinner from './components/LoadingSpinner';
 
 // Lazy-loaded pages
-const PredictoLanding = lazy(() => import('./pages/HomePage'));
-const HomePage = lazy(() => import('./pages/PredictoLanding'));
+const PredictoLanding = lazy(() => import('./pages/PredictoLanding'));
+const HomePage = lazy(() => import('./pages/HomePage'));
 const About = lazy(() => import('./pages/About'));
 const Services = lazy(() => import('./pages/Services'));
 const ServiceDetail = lazy(() => import('./pages/ServiceDetail'));

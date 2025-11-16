@@ -10,7 +10,7 @@ export default function Footer(){
           <a href="https://github.com" target="_blank" rel="noreferrer"><FaGithub className="text-xl hover:text-indigo-600"/></a>
           <a href="https://twitter.com" target="_blank" rel="noreferrer"><FaTwitter className="text-xl hover:text-indigo-600"/></a>
         </div>
-        <p className="text-sm text-gray-500 dark:text-gray-400">© {new Date().getFullYear()} Predicto.ai — Built by Akshay HK & Team</p>
+        <p className="text-sm text-gray-500 dark:text-gray-400">© {new Date().getFullYear()} Predicto.ai — Built by RISINTERNATIONAL & Team</p>
       </div>
     </footer>
   );

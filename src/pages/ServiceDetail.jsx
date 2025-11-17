@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import Layout from "../components/Layout";
 import Breadcrumb from "../components/Breadcrumb";
 import { motion } from "framer-motion";
-import { FaArrowLeft, FaCalculator, FaClock, FaStar, FaUsers, FaRocket, FaShieldAlt, FaCheckCircle, FaDownload, FaPlay, FaFileAlt, FaChartLine, FaLightbulb } from "react-icons/fa";
+import { FaArrowLeft, FaCalculator, FaClock, FaStar, FaUsers, FaRocket, FaShieldAlt, FaCheckCircle, FaDownload, FaPlay, FaFileAlt, FaChartLine, FaLightbulb, FaCalendarAlt, FaDollarSign } from "react-icons/fa";
 import LoadingSpinner from "../components/LoadingSpinner";
 
 const serviceDetails = {
@@ -275,6 +275,9 @@ const ServiceDetail = () => {
   const service = serviceDetails[id];
   const [selectedPackage, setSelectedPackage] = useState('pro');
   const [isCalculating, setIsCalculating] = useState(false);
+  const [selectedAddons, setSelectedAddons] = useState([]);
+  const [timelinePreference, setTimelinePreference] = useState('');
+  const [budgetRange, setBudgetRange] = useState([500, 5000]);
 
   if (!service) {
     return (
@@ -283,6 +286,29 @@ const ServiceDetail = () => {
       </div>
     );
   }
+
+  const calculateTotalPrice = () => {
+    let basePrice = service.pricing[selectedPackage];
+
+    // Add addon prices
+    const addonPrices = {
+      priority: 299,
+      consultation: 199,
+      revisions: 149,
+      templates: 99
+    };
+    const addonTotal = selectedAddons.reduce((sum, addon) => sum + addonPrices[addon], 0);
+
+    // Apply timeline multiplier
+    const timelineMultipliers = {
+      rush: 1.5,
+      standard: 1,
+      flexible: 0.8
+    };
+    const timelineMultiplier = timelineMultipliers[timelinePreference] || 1;
+
+    return Math.round((basePrice + addonTotal) * timelineMultiplier);
+  };
 
   const handleGetQuote = async () => {
     setIsCalculating(true);
@@ -293,7 +319,11 @@ const ServiceDetail = () => {
         state: {
           service: service.title,
           package: selectedPackage,
-          price: service.pricing[selectedPackage]
+          basePrice: service.pricing[selectedPackage],
+          addons: selectedAddons,
+          timelinePreference,
+          budgetRange,
+          totalPrice: calculateTotalPrice()
         }
       });
     }, 2000);
@@ -381,44 +411,143 @@ const ServiceDetail = () => {
               </div>
             </motion.div>
 
-            {/* Pricing Section */}
+            {/* Customization Section */}
             <motion.div
               initial={{ opacity: 0, y: 50 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4 }}
               className="bg-white dark:bg-slate-800 rounded-2xl p-8 shadow-lg"
             >
-              <h2 className="text-3xl font-bold mb-8 text-center">Choose Your Package</h2>
-              <div className="grid md:grid-cols-3 gap-6">
-                {Object.entries(service.pricing).map(([tier, price]) => (
-                  <div
-                    key={tier}
-                    onClick={() => setSelectedPackage(tier)}
-                    className={`cursor-pointer rounded-xl p-6 border-2 transition-all duration-300 ${
-                      selectedPackage === tier
-                        ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20 shadow-lg'
-                        : 'border-gray-200 dark:border-slate-600 hover:border-indigo-300'
-                    }`}
-                  >
-                    <div className="text-center">
-                      <h3 className="text-xl font-bold capitalize mb-2">{tier}</h3>
-                      <div className="text-3xl font-bold text-indigo-600 mb-4">
-                        ${price.toLocaleString()}
+              <h2 className="text-3xl font-bold mb-8 text-center">Customize Your Service</h2>
+
+              {/* Service Add-ons */}
+              <div className="mb-8">
+                <h3 className="text-xl font-semibold mb-4 flex items-center gap-2">
+                  <FaRocket className="text-purple-500" />
+                  Service Add-ons
+                </h3>
+                <div className="grid md:grid-cols-2 gap-4">
+                  {[
+                    { id: 'priority', name: 'Priority Support', price: 299 },
+                    { id: 'consultation', name: '1-on-1 Consultation Call', price: 199 },
+                    { id: 'revisions', name: 'Unlimited Revisions', price: 149 },
+                    { id: 'templates', name: 'Custom Templates', price: 99 }
+                  ].map(addon => (
+                    <label key={addon.id} className="flex items-center justify-between p-4 border border-gray-200 dark:border-slate-600 rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-slate-700">
+                      <div className="flex items-center gap-3">
+                        <input
+                          type="checkbox"
+                          checked={selectedAddons.includes(addon.id)}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setSelectedAddons([...selectedAddons, addon.id]);
+                            } else {
+                              setSelectedAddons(selectedAddons.filter(a => a !== addon.id));
+                            }
+                          }}
+                          className="w-4 h-4 text-indigo-600"
+                        />
+                        <span className="font-medium">{addon.name}</span>
                       </div>
-                      <div className="text-sm text-gray-500 dark:text-gray-400 mb-4">
-                        {tier === 'basic' && 'Perfect for startups'}
-                        {tier === 'pro' && 'Most popular choice'}
-                        {tier === 'enterprise' && 'For large organizations'}
-                      </div>
-                      {selectedPackage === tier && (
-                        <div className="text-green-500 font-semibold">Selected</div>
-                      )}
-                    </div>
-                  </div>
-                ))}
+                      <span className="text-indigo-600 font-semibold">+${addon.price}</span>
+                    </label>
+                  ))}
+                </div>
               </div>
 
-              <div className="text-center mt-8">
+              {/* Timeline Preferences */}
+              <div className="mb-8">
+                <h3 className="text-xl font-semibold mb-4 flex items-center gap-2">
+                  <FaCalendarAlt className="text-blue-500" />
+                  Timeline Preferences
+                </h3>
+                <div className="grid md:grid-cols-3 gap-4">
+                  {[
+                    { value: 'rush', label: 'Rush (3-5 days)', multiplier: 1.5 },
+                    { value: 'standard', label: 'Standard Timeline', multiplier: 1 },
+                    { value: 'flexible', label: 'Flexible (Extended)', multiplier: 0.8 }
+                  ].map(option => (
+                    <label key={option.value} className="flex items-center p-4 border border-gray-200 dark:border-slate-600 rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-slate-700">
+                      <input
+                        type="radio"
+                        name="timeline"
+                        value={option.value}
+                        checked={timelinePreference === option.value}
+                        onChange={(e) => setTimelinePreference(e.target.value)}
+                        className="w-4 h-4 text-indigo-600"
+                      />
+                      <span className="ml-3 font-medium">{option.label}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              {/* Budget Range Slider */}
+              <div className="mb-8">
+                <h3 className="text-xl font-semibold mb-4 flex items-center gap-2">
+                  <FaDollarSign className="text-green-500" />
+                  Budget Range
+                </h3>
+                <div className="px-4">
+                  <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400 mb-2">
+                    <span>${budgetRange[0]}</span>
+                    <span>${budgetRange[1]}</span>
+                  </div>
+                  <input
+                    type="range"
+                    min="500"
+                    max="5000"
+                    step="100"
+                    value={budgetRange[0]}
+                    onChange={(e) => setBudgetRange([parseInt(e.target.value), budgetRange[1]])}
+                    className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
+                  />
+                  <input
+                    type="range"
+                    min="500"
+                    max="5000"
+                    step="100"
+                    value={budgetRange[1]}
+                    onChange={(e) => setBudgetRange([budgetRange[0], parseInt(e.target.value)])}
+                    className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700 mt-2"
+                  />
+                </div>
+              </div>
+
+              {/* Package Selection */}
+              <div className="mb-8">
+                <h3 className="text-xl font-semibold mb-4">Choose Your Package</h3>
+                <div className="grid md:grid-cols-3 gap-6">
+                  {Object.entries(service.pricing).map(([tier, price]) => (
+                    <div
+                      key={tier}
+                      onClick={() => setSelectedPackage(tier)}
+                      className={`cursor-pointer rounded-xl p-6 border-2 transition-all duration-300 ${
+                        selectedPackage === tier
+                          ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20 shadow-lg'
+                          : 'border-gray-200 dark:border-slate-600 hover:border-indigo-300'
+                      }`}
+                    >
+                      <div className="text-center">
+                        <h4 className="text-xl font-bold capitalize mb-2">{tier}</h4>
+                        <div className="text-3xl font-bold text-indigo-600 mb-4">
+                          ${price.toLocaleString()}
+                        </div>
+                        <div className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+                          {tier === 'basic' && 'Perfect for startups'}
+                          {tier === 'pro' && 'Most popular choice'}
+                          {tier === 'enterprise' && 'For large organizations'}
+                        </div>
+                        {selectedPackage === tier && (
+                          <div className="text-green-500 font-semibold">Selected</div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="text-center">
                 <button
                   onClick={handleGetQuote}
                   disabled={isCalculating}
@@ -430,7 +559,7 @@ const ServiceDetail = () => {
                       AI Calculating Quote...
                     </div>
                   ) : (
-                    `Get ${service.title} Quote - $${service.pricing[selectedPackage].toLocaleString()}`
+                    `Get Customized ${service.title} Quote`
                   )}
                 </button>
               </div>

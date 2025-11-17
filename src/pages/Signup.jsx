@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import { useAuth } from '../context/AuthContext';
+import { FaUser, FaBuilding, FaBriefcase, FaCheckSquare } from 'react-icons/fa';
 
 export default function Signup() {
   const [dark, setDark] = useState(false);
@@ -10,6 +11,10 @@ export default function Signup() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
+  const [industry, setIndustry] = useState('');
+  const [companySize, setCompanySize] = useState('');
+  const [experienceLevel, setExperienceLevel] = useState('');
+  const [preferredServices, setPreferredServices] = useState([]);
   const { signup } = useAuth();
   const navigate = useNavigate();
 
@@ -20,11 +25,19 @@ export default function Signup() {
       return;
     }
     try {
-      await signup(email, password);
+      await signup(email, password, { industry, companySize, experienceLevel, preferredServices });
       navigate('/dashboard');
     } catch (err) {
       setError('Signup failed');
     }
+  };
+
+  const handleServiceChange = (service) => {
+    setPreferredServices(prev =>
+      prev.includes(service)
+        ? prev.filter(s => s !== service)
+        : [...prev, service]
+    );
   };
 
   return (
@@ -36,7 +49,10 @@ export default function Signup() {
           {error && <p className="text-red-500 text-center mb-4">{error}</p>}
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium mb-1">Email</label>
+              <label className="block text-sm font-medium mb-1 flex items-center gap-2">
+                <FaUser className="text-indigo-600" />
+                Email
+              </label>
               <input
                 type="email"
                 value={email}
@@ -64,6 +80,77 @@ export default function Signup() {
                 className="w-full p-3 border border-gray-300 rounded-lg dark:bg-slate-700 dark:border-slate-600"
                 required
               />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1 flex items-center gap-2">
+                <FaBuilding className="text-indigo-600" />
+                Industry
+              </label>
+              <select
+                value={industry}
+                onChange={(e) => setIndustry(e.target.value)}
+                className="w-full p-3 border border-gray-300 rounded-lg dark:bg-slate-700 dark:border-slate-600"
+              >
+                <option value="">Select industry...</option>
+                <option value="technology">Technology</option>
+                <option value="healthcare">Healthcare</option>
+                <option value="finance">Finance</option>
+                <option value="retail">Retail</option>
+                <option value="manufacturing">Manufacturing</option>
+                <option value="education">Education</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1 flex items-center gap-2">
+                <FaBriefcase className="text-indigo-600" />
+                Company Size
+              </label>
+              <select
+                value={companySize}
+                onChange={(e) => setCompanySize(e.target.value)}
+                className="w-full p-3 border border-gray-300 rounded-lg dark:bg-slate-700 dark:border-slate-600"
+              >
+                <option value="">Select company size...</option>
+                <option value="1-10">1-10 employees</option>
+                <option value="11-50">11-50 employees</option>
+                <option value="51-200">51-200 employees</option>
+                <option value="201-1000">201-1000 employees</option>
+                <option value="1000+">1000+ employees</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Experience Level</label>
+              <select
+                value={experienceLevel}
+                onChange={(e) => setExperienceLevel(e.target.value)}
+                className="w-full p-3 border border-gray-300 rounded-lg dark:bg-slate-700 dark:border-slate-600"
+              >
+                <option value="">Select experience level...</option>
+                <option value="beginner">Beginner (0-2 years)</option>
+                <option value="intermediate">Intermediate (2-5 years)</option>
+                <option value="advanced">Advanced (5-10 years)</option>
+                <option value="expert">Expert (10+ years)</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-2 flex items-center gap-2">
+                <FaCheckSquare className="text-indigo-600" />
+                Preferred Services
+              </label>
+              <div className="space-y-2">
+                {['Project Estimation', 'Business Consulting', 'AI Solutions', 'Web Development', 'Mobile Apps'].map(service => (
+                  <label key={service} className="flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={preferredServices.includes(service)}
+                      onChange={() => handleServiceChange(service)}
+                      className="mr-2"
+                    />
+                    {service}
+                  </label>
+                ))}
+              </div>
             </div>
             <button type="submit" className="w-full py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">
               Sign Up

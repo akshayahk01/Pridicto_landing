@@ -5,7 +5,7 @@ import Layout from '../components/Layout';
 import Breadcrumb from '../components/Breadcrumb';
 import axios from 'axios';
 import { motion } from 'framer-motion';
-import { FaCalculator, FaRobot, FaChartLine, FaClock, FaCheckCircle, FaArrowRight, FaArrowLeft, FaDownload, FaShare } from 'react-icons/fa';
+import { FaCalculator, FaRobot, FaChartLine, FaClock, FaCheckCircle, FaArrowRight, FaArrowLeft, FaDownload, FaShare, FaUpload, FaMapMarkerAlt, FaUsers, FaCodeBranch } from 'react-icons/fa';
 import LoadingSpinner from '../components/LoadingSpinner';
 
 export default function EstimationForm() {
@@ -162,7 +162,10 @@ export default function EstimationForm() {
                 </h2>
                 <div className="grid md:grid-cols-2 gap-6">
                   <label className="block">
-                    <span className="text-gray-700 dark:text-gray-300 font-medium">Team Size</span>
+                    <span className="text-gray-700 dark:text-gray-300 font-medium flex items-center gap-2">
+                      <FaUsers className="text-indigo-600" />
+                      Team Size
+                    </span>
                     <input
                       type="number"
                       {...register('teamSize', { required: true, min: 1 })}
@@ -172,7 +175,7 @@ export default function EstimationForm() {
                     {errors.teamSize && <span className="text-red-500 text-sm mt-1 block">Required, min 1</span>}
                   </label>
                   <label className="block">
-                    <span className="text-gray-700 dark:text-gray-300 font-medium">Complexity Level</span>
+                    <span className="text-gray-700 dark:text-gray-300 font-medium">Project Complexity Level</span>
                     <select {...register('complexity', { required: true })} className="mt-2 block w-full p-4 border border-gray-300 rounded-lg dark:bg-slate-700 dark:border-slate-600 focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
                       <option value="">Select complexity...</option>
                       <option value="low">🟢 Low - Basic features</option>
@@ -181,7 +184,19 @@ export default function EstimationForm() {
                     </select>
                     {errors.complexity && <span className="text-red-500 text-sm mt-1 block">This field is required</span>}
                   </label>
-                  <label className="block md:col-span-2">
+                  <label className="block">
+                    <span className="text-gray-700 dark:text-gray-300 font-medium flex items-center gap-2">
+                      <FaMapMarkerAlt className="text-indigo-600" />
+                      Geographic Location
+                    </span>
+                    <input
+                      type="text"
+                      {...register('location')}
+                      className="mt-2 block w-full p-4 border border-gray-300 rounded-lg dark:bg-slate-700 dark:border-slate-600 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                      placeholder="City, Country (affects cost estimates)"
+                    />
+                  </label>
+                  <label className="block">
                     <span className="text-gray-700 dark:text-gray-300 font-medium">Estimated Duration (weeks)</span>
                     <input
                       type="number"
@@ -190,6 +205,24 @@ export default function EstimationForm() {
                       placeholder="How many weeks do you expect?"
                     />
                     {errors.duration && <span className="text-red-500 text-sm mt-1 block">Required, min 1</span>}
+                  </label>
+                </div>
+                <div className="mt-6">
+                  <label className="block">
+                    <span className="text-gray-700 dark:text-gray-300 font-medium flex items-center gap-2">
+                      <FaUpload className="text-indigo-600" />
+                      Upload Documents (Optional)
+                    </span>
+                    <div className="mt-2">
+                      <input
+                        type="file"
+                        {...register('documents')}
+                        multiple
+                        accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.png"
+                        className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
+                      />
+                      <p className="mt-1 text-sm text-gray-500">Upload blueprints, budgets, or project documents for more accurate estimates</p>
+                    </div>
                   </label>
                 </div>
                 <div className="mt-8 flex justify-between">
@@ -209,37 +242,32 @@ export default function EstimationForm() {
                   <FaCheckCircle className="text-purple-600" />
                   Step 3: Tech Stack (Optional)
                 </h2>
-                <div className="grid md:grid-cols-3 gap-6">
+                <div className="grid md:grid-cols-2 gap-6">
                   <label className="block">
-                    <span className="text-gray-700 dark:text-gray-300 font-medium">Frontend</span>
-                    <select {...register('frontend')} className="mt-2 block w-full p-4 border border-gray-300 rounded-lg dark:bg-slate-700 dark:border-slate-600 focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
-                      <option value="">Select...</option>
-                      <option value="react">⚛️ React</option>
-                      <option value="vue">💚 Vue.js</option>
-                      <option value="angular">🅰️ Angular</option>
-                      <option value="svelte">🧡 Svelte</option>
+                    <span className="text-gray-700 dark:text-gray-300 font-medium flex items-center gap-2">
+                      <FaCodeBranch className="text-indigo-600" />
+                      Preferred Tech Stack
+                    </span>
+                    <select {...register('techStack')} className="mt-2 block w-full p-4 border border-gray-300 rounded-lg dark:bg-slate-700 dark:border-slate-600 focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                      <option value="">Select preferred stack...</option>
+                      <option value="mern">MERN (MongoDB, Express, React, Node)</option>
+                      <option value="mean">MEAN (MongoDB, Express, Angular, Node)</option>
+                      <option value="django">Django (Python)</option>
+                      <option value="rails">Ruby on Rails</option>
+                      <option value="laravel">Laravel (PHP)</option>
+                      <option value="spring">Spring Boot (Java)</option>
+                      <option value="serverless">Serverless (AWS Lambda, Firebase)</option>
+                      <option value="other">Other/Custom</option>
                     </select>
                   </label>
                   <label className="block">
-                    <span className="text-gray-700 dark:text-gray-300 font-medium">Backend</span>
-                    <select {...register('backend')} className="mt-2 block w-full p-4 border border-gray-300 rounded-lg dark:bg-slate-700 dark:border-slate-600 focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
-                      <option value="">Select...</option>
-                      <option value="node">🟢 Node.js</option>
-                      <option value="python">🐍 Python</option>
-                      <option value="java">☕ Java</option>
-                      <option value="php">🐘 PHP</option>
-                      <option value="ruby">💎 Ruby</option>
-                    </select>
-                  </label>
-                  <label className="block">
-                    <span className="text-gray-700 dark:text-gray-300 font-medium">Database</span>
-                    <select {...register('database')} className="mt-2 block w-full p-4 border border-gray-300 rounded-lg dark:bg-slate-700 dark:border-slate-600 focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
-                      <option value="">Select...</option>
-                      <option value="mongodb">🍃 MongoDB</option>
-                      <option value="postgres">🐘 PostgreSQL</option>
-                      <option value="mysql">🟦 MySQL</option>
-                      <option value="firebase">🔥 Firebase</option>
-                    </select>
+                    <span className="text-gray-700 dark:text-gray-300 font-medium">Additional Requirements</span>
+                    <textarea
+                      {...register('requirements')}
+                      className="mt-2 block w-full p-4 border border-gray-300 rounded-lg dark:bg-slate-700 dark:border-slate-600 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                      placeholder="Any specific features, integrations, or requirements..."
+                      rows="3"
+                    />
                   </label>
                 </div>
                 <div className="mt-8 flex justify-between">

@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import emailjs from '@emailjs/browser';
-import { MessageSquare, X, Star, Send } from 'lucide-react';
+import { MessageSquare, X, Star, Send, ThumbsUp } from 'lucide-react';
 
 export default function FeedbackModal({ isOpen, onClose }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [rating, setRating] = useState(0);
+  const [npsScore, setNpsScore] = useState(0);
+  const [selectedSuggestions, setSelectedSuggestions] = useState([]);
   const { register, handleSubmit, reset, formState: { errors } } = useForm();
 
   const onSubmit = async (data) => {
@@ -19,14 +21,19 @@ export default function FeedbackModal({ isOpen, onClose }) {
           name: data.name || 'Anonymous',
           email: data.email || 'no-reply@predicto.ai',
           rating: rating,
+          npsScore: npsScore,
+          detailedComments: data.detailedComments,
+          featureSuggestions: selectedSuggestions.join(', '),
           feedback: data.feedback,
-          message: `Feedback from ${data.name || 'Anonymous'}: Rating ${rating}/5 - ${data.feedback}`
+          message: `Feedback from ${data.name || 'Anonymous'}: Rating ${rating}/5, NPS ${npsScore}/10 - ${data.feedback}`
         },
         'YOUR_USER_ID' // Replace with your EmailJS user ID
       );
       setIsSubmitted(true);
       reset();
       setRating(0);
+      setNpsScore(0);
+      setSelectedSuggestions([]);
       setTimeout(() => {
         setIsSubmitted(false);
         onClose();
@@ -36,6 +43,14 @@ export default function FeedbackModal({ isOpen, onClose }) {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleSuggestionChange = (suggestion) => {
+    setSelectedSuggestions(prev =>
+      prev.includes(suggestion)
+        ? prev.filter(s => s !== suggestion)
+        : [...prev, suggestion]
+    );
   };
 
   if (!isOpen) return null;
@@ -136,6 +151,62 @@ export default function FeedbackModal({ isOpen, onClose }) {
                   {errors.email && (
                     <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>
                   )}
+                </div>
+
+                {/* NPS Score */}
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                    NPS Score (0-10)
+                  </label>
+                  <div className="flex gap-1 justify-center">
+                    {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((score) => (
+                      <button
+                        key={score}
+                        type="button"
+                        onClick={() => setNpsScore(score)}
+                        className={`w-8 h-8 rounded-full text-xs font-medium transition-colors ${
+                          npsScore === score
+                            ? 'bg-indigo-600 text-white'
+                            : 'bg-gray-200 dark:bg-slate-600 text-slate-700 dark:text-slate-300 hover:bg-indigo-100 dark:hover:bg-slate-500'
+                        }`}
+                      >
+                        {score}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Detailed Comments */}
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                    Detailed Comments
+                  </label>
+                  <textarea
+                    {...register('detailedComments')}
+                    placeholder="Please provide more detailed feedback..."
+                    rows="3"
+                    className="w-full p-3 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors resize-none"
+                  />
+                </div>
+
+                {/* Feature Suggestions */}
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                    Feature Suggestions
+                  </label>
+                  <div className="space-y-2">
+                    {['Better UI/UX', 'More Integrations', 'Advanced Analytics', 'Mobile App', 'API Access', 'Custom Reports'].map(suggestion => (
+                      <label key={suggestion} className="flex items-center">
+                        <input
+                          type="checkbox"
+                          checked={selectedSuggestions.includes(suggestion)}
+                          onChange={() => handleSuggestionChange(suggestion)}
+                          className="mr-2"
+                        />
+                        {suggestion}
+                      </label>
+                    ))}
+                  </div>
                 </div>
 
                 {/* Feedback */}

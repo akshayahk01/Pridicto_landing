@@ -45,8 +45,8 @@ export default function ServiceCard({ icon, title, description, onLearnMore, pri
         {/* Pricing Preview */}
         {pricing && (
           <div className="mb-4">
-            <div className="text-2xl font-bold text-indigo-600">
-              From ${pricing.basic.toLocaleString()}
+            <div className="text-lg font-bold text-indigo-600">
+              {pricing}
             </div>
             <div className="text-sm text-gray-500 dark:text-gray-400">Starting price</div>
           </div>

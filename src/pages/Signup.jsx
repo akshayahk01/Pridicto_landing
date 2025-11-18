@@ -7,6 +7,8 @@ import { FaUser, FaBuilding, FaBriefcase, FaCheckSquare } from 'react-icons/fa';
 
 export default function Signup() {
   const [dark, setDark] = useState(false);
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -25,8 +27,10 @@ export default function Signup() {
       return;
     }
     try {
-      await signup(email, password, { industry, companySize, experienceLevel, preferredServices });
-      navigate('/dashboard');
+      await signup(email, password, { firstName, lastName, industry, companySize, experienceLevel, preferredServices });
+      // Show success message and redirect to login or verification page
+      alert('Registration successful! Please check your email for verification.');
+      navigate('/login');
     } catch (err) {
       setError('Signup failed');
     }
@@ -51,8 +55,28 @@ export default function Signup() {
             <div>
               <label className="block text-sm font-medium mb-1 flex items-center gap-2">
                 <FaUser className="text-indigo-600" />
-                Email
+                First Name
               </label>
+              <input
+                type="text"
+                value={firstName}
+                onChange={(e) => setFirstName(e.target.value)}
+                className="w-full p-3 border border-gray-300 rounded-lg dark:bg-slate-700 dark:border-slate-600"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Last Name</label>
+              <input
+                type="text"
+                value={lastName}
+                onChange={(e) => setLastName(e.target.value)}
+                className="w-full p-3 border border-gray-300 rounded-lg dark:bg-slate-700 dark:border-slate-600"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Email</label>
               <input
                 type="email"
                 value={email}
@@ -68,6 +92,7 @@ export default function Signup() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="w-full p-3 border border-gray-300 rounded-lg dark:bg-slate-700 dark:border-slate-600"
+                minLength="8"
                 required
               />
             </div>

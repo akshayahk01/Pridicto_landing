@@ -28,13 +28,20 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const signup = async (email, password) => {
+  const signup = async (email, password, additionalData) => {
     try {
-      const res = await axios.post('/api/auth/signup', { email, password });
-      const { token: newToken } = res.data;
-      setToken(newToken);
-      localStorage.setItem('token', newToken);
-      setUser({ email });
+      const signupData = {
+        email,
+        password,
+        firstName: additionalData?.firstName || '',
+        lastName: additionalData?.lastName || '',
+        phone: additionalData?.phone || '',
+        company: additionalData?.company || ''
+      };
+      console.log('Signup data:', signupData); // Debug log
+      const res = await axios.post('/api/auth/register', signupData);
+      // Registration successful, but user needs to verify email before login
+      return res.data;
     } catch (error) {
       throw error;
     }

@@ -22,7 +22,6 @@ const EstimationForm = lazy(() => import('./pages/EstimationForm'));
 const Dashboard = lazy(() => import('./pages/Dashboard'));
 const Comparison = lazy(() => import('./pages/Comparison'));
 const Login = lazy(() => import('./pages/Login'));
-const Signup = lazy(() => import('./pages/Signup'));
 const AdminPanel = lazy(() => import('./pages/AdminPanel'));
 const FAQ = lazy(() => import('./pages/FAQ'));
 
@@ -47,7 +46,7 @@ export default function App() {
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/comparison" element={<Comparison />} />
             <Route path="/login" element={<Login />} />
-            <Route path="/signup" element={<Signup />} />
+            <Route path="/signup" element={<Login />} />
             <Route path="/admin" element={<AdminPanel />} />
             <Route path="/about" element={<About />} />
             <Route path="/services" element={<Services />} />

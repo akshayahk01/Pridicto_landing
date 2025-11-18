@@ -1,127 +1,424 @@
-// Modern Login Page for Project Estimation Tool (Pridicto)
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import Navbar from '../components/Navbar';
-import Footer from '../components/Footer';
-import { useAuth } from '../context/AuthContext';
-import { motion } from 'framer-motion';
+import React, { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { FiMail, FiLock, FiUser, FiLoader } from "react-icons/fi";
+import { FcGoogle } from "react-icons/fc";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
-export default function Login() {
-  const [dark, setDark] = useState(false);
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
-  const { login } = useAuth();
+const AuthPage = () => {
+  const [isLogin, setIsLogin] = useState(true);
   const navigate = useNavigate();
+  const { login, signup, loading } = useAuth();
 
-  const handleSubmit = async (e) => {
+  // Login form state
+  const [loginForm, setLoginForm] = useState({ email: "", password: "" });
+  const [loginErrors, setLoginErrors] = useState({});
+
+  // Signup form state
+  const [signupForm, setSignupForm] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+  });
+  const [signupErrors, setSignupErrors] = useState({});
+  const [submitError, setSubmitError] = useState("");
+
+  // Validation functions
+  const validateLoginForm = () => {
+    const errors = {};
+    if (!loginForm.email) errors.email = "Email is required";
+    else if (!/\S+@\S+\.\S+/.test(loginForm.email))
+      errors.email = "Email is invalid";
+    if (!loginForm.password) errors.password = "Password is required";
+    return errors;
+  };
+
+  const validateSignupForm = () => {
+    const errors = {};
+    if (!signupForm.firstName) errors.firstName = "First name is required";
+    if (!signupForm.lastName) errors.lastName = "Last name is required";
+    if (!signupForm.email) errors.email = "Email is required";
+    else if (!/\S+@\S+\.\S+/.test(signupForm.email))
+      errors.email = "Email is invalid";
+    if (!signupForm.password) errors.password = "Password is required";
+    else if (signupForm.password.length < 6)
+      errors.password = "Password must be at least 6 characters";
+    if (signupForm.password !== signupForm.confirmPassword)
+      errors.confirmPassword = "Passwords do not match";
+    return errors;
+  };
+
+  // Handle login submit
+  const handleLoginSubmit = async (e) => {
     e.preventDefault();
+    setSubmitError("");
+    const errors = validateLoginForm();
+
+    if (Object.keys(errors).length > 0) {
+      setLoginErrors(errors);
+      return;
+    }
+
     try {
-      await login(email, password);
-      navigate('/dashboard');
-    } catch (err) {
-      setError('Invalid credentials');
+      await login(loginForm.email, loginForm.password);
+      setLoginForm({ email: "", password: "" });
+      navigate("/dashboard");
+    } catch (error) {
+      setSubmitError(error.message || "Login failed. Please try again.");
     }
   };
 
+  // Handle signup submit
+  const handleSignupSubmit = async (e) => {
+    e.preventDefault();
+    setSubmitError("");
+    const errors = validateSignupForm();
+
+    if (Object.keys(errors).length > 0) {
+      setSignupErrors(errors);
+      return;
+    }
+
+    try {
+      await signup(signupForm.email, signupForm.password, {
+        firstName: signupForm.firstName,
+        lastName: signupForm.lastName,
+      });
+      setSignupForm({
+        firstName: "",
+        lastName: "",
+        email: "",
+        password: "",
+        confirmPassword: "",
+      });
+      setIsLogin(true);
+      setLoginForm({ email: signupForm.email, password: "" });
+    } catch (error) {
+      setSubmitError(error.message || "Signup failed. Please try again.");
+    }
+  };
+
+  // Handle Google login
+  const handleGoogleAuth = () => {
+    // TODO: Implement Google OAuth
+    setSubmitError("Google authentication coming soon");
+  };
+
   return (
-    <div className={`min-h-screen transition-colors duration-500 ${dark ? 'bg-gradient-to-br from-gray-900 to-gray-800 text-gray-100' : 'bg-gradient-to-br from-gray-50 to-gray-200 text-gray-800'}`}>
-      <Navbar dark={dark} setDark={setDark} />
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-700 via-purple-700 to-pink-600 text-white overflow-hidden">
+      <div className="absolute inset-0 bg-black/40 backdrop-blur-md"></div>
 
-      <div className="pt-20 pb-10 md:flex min-h-[calc(100vh-160px)]">
-
-        {/* Left Section with Video Background */}
-        <motion.div
-          initial={{ opacity: 0, x: -50 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 1 }}
-          className="hidden md:flex flex-1 relative overflow-hidden rounded-r-xl shadow-2xl"
-        >
-          <video
-            autoPlay
-            loop
-            muted
-            playsInline
-            className="absolute inset-0 w-full h-full object-cover"
-            src="/videos/estimation.mp4" // Make sure to add your video in public/videos
-          ></video>
-          <div className="absolute inset-0 bg-gradient-to-r from-indigo-900/80 via-blue-800/40 to-transparent p-8 flex items-center justify-start">
-            <div className="text-white max-w-lg z-10">
-              <h2 className="text-4xl font-bold mb-4 leading-snug">
-                Smarter Estimates with <span className="underline decoration-lime-400">Pridicto</span>
-              </h2>
-              <p className="text-lg mb-6">
-                Your AI-powered companion for exact project costing and timelines.
-              </p>
-              <ul className="space-y-3 text-sm md:text-base">
-                <li className="flex items-center gap-2"><span>🧠</span> Data-driven estimations</li>
-                <li className="flex items-center gap-2"><span>🚀</span> Automated workflows</li>
-                <li className="flex items-center gap-2"><span>📈</span> Dynamic cost projections</li>
-              </ul>
+      <motion.div
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="relative z-10 w-full max-w-4xl bg-white/10 border border-white/20 backdrop-blur-md rounded-3xl shadow-xl overflow-hidden"
+      >
+        <div className="grid md:grid-cols-2">
+          {/* Left Promo Section */}
+          <div className="hidden md:flex flex-col justify-center items-center p-10 bg-gradient-to-br from-blue-900 to-teal-600">
+            <h2 className="text-4xl font-extrabold mb-4">Welcome to Pridicto</h2>
+            <p className="text-lg mb-6 text-center">
+              Smart, powerful project estimation tailored for teams that deliver.
+            </p>
+            <div className="space-y-3 text-left">
+              <p>✔ AI-powered cost & time estimation</p>
+              <p>✔ Predict risks before they occur</p>
+              <p>✔ Custom workflows for construction, IT, and more</p>
             </div>
           </div>
-        </motion.div>
 
-        {/* Right Section: Login Form */}
-        <motion.div
-          initial={{ opacity: 0, y: 50 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-          className="flex-1 w-full max-w-md mx-auto p-8"
-        >
-          <div className="bg-white dark:bg-slate-800 p-8 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700">
-            <h1 className="text-3xl font-extrabold text-center mb-6 tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-blue-400">
-              Welcome Back
-            </h1>
-            {error && <p className="text-red-500 text-center mb-4">{error}</p>}
+          {/* Right Auth Section */}
+          <motion.div
+            layout
+            initial={{ x: 50, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            exit={{ x: -50, opacity: 0 }}
+            transition={{ type: "spring", stiffness: 120, damping: 20 }}
+            className="p-10 bg-white/5 dark:bg-gray-900/60"
+          >
+            <AnimatePresence mode="wait">
+              {/* Login Form */}
+              {isLogin && (
+                <motion.div
+                  key="login"
+                  initial={{ opacity: 0, x: 50 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -50 }}
+                  transition={{ duration: 0.5 }}
+                >
+                  <h2 className="text-3xl font-semibold mb-6 text-center">Log In</h2>
+                  {submitError && (
+                    <div className="mb-4 p-3 bg-red-500/20 border border-red-500 rounded-lg text-red-200">
+                      {submitError}
+                    </div>
+                  )}
+                  <form className="space-y-6" onSubmit={handleLoginSubmit}>
+                    <div>
+                      <label className="flex items-center gap-2 mb-1" htmlFor="email">
+                        <FiMail />
+                        Email Address
+                      </label>
+                      <input
+                        type="email"
+                        id="email"
+                        className={`w-full px-4 py-2 rounded-lg border focus:outline-none focus:ring-2 ${
+                          loginErrors.email
+                            ? "border-red-500 focus:ring-red-500"
+                            : "border-gray-300 focus:ring-blue-500"
+                        }`}
+                        placeholder="example@mail.com"
+                        value={loginForm.email}
+                        onChange={(e) =>
+                          setLoginForm({ ...loginForm, email: e.target.value })
+                        }
+                      />
+                      {loginErrors.email && (
+                        <p className="text-red-400 text-sm mt-1">{loginErrors.email}</p>
+                      )}
+                    </div>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium mb-1">Email</label>
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="w-full p-3 border border-gray-300 rounded-lg dark:bg-slate-700 dark:border-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Password</label>
-                <input
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full p-3 border border-gray-300 rounded-lg dark:bg-slate-700 dark:border-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                  required
-                />
-              </div>
-              <button
-                type="submit"
-                className="w-full py-3 bg-gradient-to-r from-indigo-600 to-blue-500 text-white font-semibold rounded-lg hover:from-indigo-700 hover:to-blue-600 transition-colors shadow-md"
-              >
-                Login
-              </button>
-            </form>
+                    <div>
+                      <label className="flex items-center gap-2 mb-1" htmlFor="password">
+                        <FiLock />
+                        Password
+                      </label>
+                      <input
+                        type="password"
+                        id="password"
+                        className={`w-full px-4 py-2 rounded-lg border focus:outline-none focus:ring-2 ${
+                          loginErrors.password
+                            ? "border-red-500 focus:ring-red-500"
+                            : "border-gray-300 focus:ring-blue-500"
+                        }`}
+                        placeholder="********"
+                        value={loginForm.password}
+                        onChange={(e) =>
+                          setLoginForm({ ...loginForm, password: e.target.value })
+                        }
+                      />
+                      {loginErrors.password && (
+                        <p className="text-red-400 text-sm mt-1">{loginErrors.password}</p>
+                      )}
+                    </div>
 
-            <div className="text-center mt-4 space-y-2">
-              <p>
-                Don’t have an account?{' '}
-                <Link to="/signup" className="text-indigo-600 hover:underline">
-                  Sign up
-                </Link>
-              </p>
-              <p>
-                <Link to="/reset-password" className="text-indigo-600 hover:underline">
-                  Forgot password?
-                </Link>
-              </p>
-            </div>
-          </div>
-        </motion.div>
-      </div>
+                    <button
+                      type="submit"
+                      disabled={loading}
+                      className="w-full py-3 rounded-lg bg-gradient-to-r from-teal-500 to-blue-600 text-white hover:opacity-90 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                    >
+                      {loading && <FiLoader className="animate-spin" />}
+                      {loading ? "Logging in..." : "Login"}
+                    </button>
+                  </form>
 
-      <Footer />
+                  <button
+                    type="button"
+                    onClick={handleGoogleAuth}
+                    className="w-full mt-4 py-3 border rounded-lg flex justify-center items-center gap-3 text-lg font-medium hover:bg-gray-100 dark:hover:bg-gray-700 transition"
+                  >
+                    <FcGoogle className="text-2xl" /> Continue with Google
+                  </button>
+
+                  <div className="text-sm text-center mt-4">
+                    <p>
+                      Don't have an account?{' '}
+                      <button
+                        onClick={() => setIsLogin(false)}
+                        className="text-blue-300 hover:underline"
+                      >
+                        Sign up
+                      </button>
+                    </p>
+                  </div>
+                </motion.div>
+              )}
+
+              {/* Signup Form */}
+              {!isLogin && (
+                <motion.div
+                  key="signup"
+                  initial={{ opacity: 0, x: -50 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: 50 }}
+                  transition={{ duration: 0.5 }}
+                >
+                  <h2 className="text-3xl font-semibold mb-6 text-center">Create Account</h2>
+                  {submitError && (
+                    <div className="mb-4 p-3 bg-red-500/20 border border-red-500 rounded-lg text-red-200">
+                      {submitError}
+                    </div>
+                  )}
+                  <form className="space-y-5" onSubmit={handleSignupSubmit}>
+                    <div className="grid md:grid-cols-2 gap-3">
+                      <div>
+                        <label className="flex items-center gap-2 mb-1">
+                          <FiUser /> First Name
+                        </label>
+                        <input
+                          type="text"
+                          placeholder="John"
+                          className={`w-full p-3 rounded-lg border focus:ring-2 focus:outline-none ${
+                            signupErrors.firstName
+                              ? "border-red-500 focus:ring-red-500"
+                              : "border-gray-300 focus:ring-indigo-500"
+                          }`}
+                          value={signupForm.firstName}
+                          onChange={(e) =>
+                            setSignupForm({
+                              ...signupForm,
+                              firstName: e.target.value,
+                            })
+                          }
+                        />
+                        {signupErrors.firstName && (
+                          <p className="text-red-400 text-sm mt-1">
+                            {signupErrors.firstName}
+                          </p>
+                        )}
+                      </div>
+
+                      <div>
+                        <label className="flex items-center gap-2 mb-1">
+                          <FiUser /> Last Name
+                        </label>
+                        <input
+                          type="text"
+                          placeholder="Doe"
+                          className={`w-full p-3 rounded-lg border focus:ring-2 focus:outline-none ${
+                            signupErrors.lastName
+                              ? "border-red-500 focus:ring-red-500"
+                              : "border-gray-300 focus:ring-indigo-500"
+                          }`}
+                          value={signupForm.lastName}
+                          onChange={(e) =>
+                            setSignupForm({
+                              ...signupForm,
+                              lastName: e.target.value,
+                            })
+                          }
+                        />
+                        {signupErrors.lastName && (
+                          <p className="text-red-400 text-sm mt-1">
+                            {signupErrors.lastName}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="flex items-center gap-2 mb-1">
+                        <FiMail /> Email Address
+                      </label>
+                      <input
+                        type="email"
+                        placeholder="you@example.com"
+                        className={`w-full p-3 rounded-lg border focus:ring-2 focus:outline-none ${
+                          signupErrors.email
+                            ? "border-red-500 focus:ring-red-500"
+                            : "border-gray-300 focus:ring-indigo-500"
+                        }`}
+                        value={signupForm.email}
+                        onChange={(e) =>
+                          setSignupForm({ ...signupForm, email: e.target.value })
+                        }
+                      />
+                      {signupErrors.email && (
+                        <p className="text-red-400 text-sm mt-1">
+                          {signupErrors.email}
+                        </p>
+                      )}
+                    </div>
+
+                    <div>
+                      <label className="flex items-center gap-2 mb-1">
+                        <FiLock /> Password
+                      </label>
+                      <input
+                        type="password"
+                        placeholder="••••••••"
+                        className={`w-full p-3 rounded-lg border focus:ring-2 focus:outline-none ${
+                          signupErrors.password
+                            ? "border-red-500 focus:ring-red-500"
+                            : "border-gray-300 focus:ring-indigo-500"
+                        }`}
+                        value={signupForm.password}
+                        onChange={(e) =>
+                          setSignupForm({ ...signupForm, password: e.target.value })
+                        }
+                      />
+                      {signupErrors.password && (
+                        <p className="text-red-400 text-sm mt-1">
+                          {signupErrors.password}
+                        </p>
+                      )}
+                    </div>
+
+                    <div>
+                      <label className="flex items-center gap-2 mb-1">
+                        <FiLock /> Confirm Password
+                      </label>
+                      <input
+                        type="password"
+                        placeholder="••••••••"
+                        className={`w-full p-3 rounded-lg border focus:ring-2 focus:outline-none ${
+                          signupErrors.confirmPassword
+                            ? "border-red-500 focus:ring-red-500"
+                            : "border-gray-300 focus:ring-indigo-500"
+                        }`}
+                        value={signupForm.confirmPassword}
+                        onChange={(e) =>
+                          setSignupForm({
+                            ...signupForm,
+                            confirmPassword: e.target.value,
+                          })
+                        }
+                      />
+                      {signupErrors.confirmPassword && (
+                        <p className="text-red-400 text-sm mt-1">
+                          {signupErrors.confirmPassword}
+                        </p>
+                      )}
+                    </div>
+
+                    <button
+                      type="submit"
+                      disabled={loading}
+                      className="w-full py-3 bg-indigo-600 text-white rounded-lg font-semibold hover:bg-indigo-700 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                    >
+                      {loading && <FiLoader className="animate-spin" />}
+                      {loading ? "Creating account..." : "Sign Up"}
+                    </button>
+                  </form>
+
+                  <button
+                    type="button"
+                    onClick={handleGoogleAuth}
+                    className="w-full mt-4 py-3 border rounded-lg flex justify-center items-center gap-3 text-lg font-medium hover:bg-gray-100 dark:hover:bg-gray-700 transition"
+                  >
+                    <FcGoogle className="text-2xl" /> Continue with Google
+                  </button>
+
+                  <div className="text-sm text-center mt-4">
+                    <p>
+                      Already have an account?{' '}
+                      <button
+                        onClick={() => setIsLogin(true)}
+                        className="text-blue-300 hover:underline"
+                      >
+                        Login
+                      </button>
+                    </p>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </motion.div>
+        </div>
+      </motion.div>
     </div>
   );
-}
+};
+
+export default AuthPage;

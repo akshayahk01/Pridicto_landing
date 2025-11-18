@@ -1,7 +1,7 @@
 import { createSlice } from '@reduxjs/toolkit';
 
 const initialState = {
-  theme: localStorage.getItem('theme') || 'light',
+  theme: 'light',
   sidebarOpen: false,
   modal: {
     isOpen: false,

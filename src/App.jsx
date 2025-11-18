@@ -1,9 +1,12 @@
-import React, { Suspense, lazy } from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import React, { Suspense, lazy, useEffect } from 'react';
+import { Routes, Route } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 import Chatbot from './components/Chatbot';
 import { AuthProvider } from './context/AuthContext';
 import ErrorBoundary from './components/ErrorBoundary';
 import LoadingSpinner from './components/LoadingSpinner';
+import Toast from './components/Toast';
+import useAnalytics from './hooks/useAnalytics';
 
 // Lazy-loaded pages
 const PredictoLanding = lazy(() => import('./pages/PredictoLanding'));
@@ -24,32 +27,39 @@ const AdminPanel = lazy(() => import('./pages/AdminPanel'));
 const FAQ = lazy(() => import('./pages/FAQ'));
 
 export default function App() {
+  const { theme } = useSelector((state) => state.ui);
+  const analytics = useAnalytics();
+
+  // Apply theme to document
+  useEffect(() => {
+    document.documentElement.classList.toggle('dark', theme === 'dark');
+  }, [theme]);
+
   return (
     <ErrorBoundary>
       <AuthProvider>
-        <BrowserRouter>
-          <Suspense fallback={<LoadingSpinner size="lg" message="Loading page..." />}>
-            <Routes>
-              <Route path="/" element={<PredictoLanding />} />
-              <Route path="/home" element={<HomePage />} />
-              <Route path="/estimate" element={<EstimationForm />} />
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/comparison" element={<Comparison />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/signup" element={<Signup />} />
-              <Route path="/admin" element={<AdminPanel />} />
-              <Route path="/about" element={<About />} />
-              <Route path="/services" element={<Services />} />
-              <Route path="/services/:id" element={<ServiceDetail />} />
-              <Route path="/portfolio" element={<Portfolio />} />
-              <Route path="/insights" element={<Insights />} />
-              <Route path="/global-presence" element={<GlobalPresence />} />
-              <Route path="/contact" element={<Contact />} />
-              <Route path="/faq" element={<FAQ />} />
-            </Routes>
-            <Chatbot />
-          </Suspense>
-        </BrowserRouter>
+        <Suspense fallback={<LoadingSpinner size="lg" message="Loading page..." />}>
+          <Toast />
+          <Routes>
+            <Route path="/" element={<PredictoLanding />} />
+            <Route path="/home" element={<HomePage />} />
+            <Route path="/estimate" element={<EstimationForm />} />
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/comparison" element={<Comparison />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<Signup />} />
+            <Route path="/admin" element={<AdminPanel />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/services" element={<Services />} />
+            <Route path="/services/:id" element={<ServiceDetail />} />
+            <Route path="/portfolio" element={<Portfolio />} />
+            <Route path="/insights" element={<Insights />} />
+            <Route path="/global-presence" element={<GlobalPresence />} />
+            <Route path="/contact" element={<Contact />} />
+            <Route path="/faq" element={<FAQ />} />
+          </Routes>
+          <Chatbot />
+        </Suspense>
       </AuthProvider>
     </ErrorBoundary>
   );

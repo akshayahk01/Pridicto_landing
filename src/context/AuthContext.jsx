@@ -1,28 +1,44 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import axios from 'axios';
+import React, { createContext, useContext, useEffect } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import { loginUser, registerUser, logoutUser, setUser } from '../store/slices/authSlice';
+import { showToast } from '../store/slices/uiSlice';
 
 const AuthContext = createContext();
 
 export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-  const [token, setToken] = useState(localStorage.getItem('token') || null);
+  const dispatch = useDispatch();
+  const { user, token, isAuthenticated, loading, error } = useSelector((state) => state.auth);
 
+  // Check auth status on mount
   useEffect(() => {
-    if (token) {
-      // Decode token or fetch user info if needed
-      setUser({ email: 'user@example.com' }); // Mock user
+    const storedToken = localStorage.getItem('token');
+    if (storedToken && !user) {
+      // Try to decode token or make API call to get user info
+      // For now, we'll assume the token is valid if it exists
+      // In a real app, you'd validate the token with the backend
+      dispatch(setUser({ id: 1, email: 'user@example.com', firstName: 'John', lastName: 'Doe' }));
     }
-  }, [token]);
+  }, [dispatch, user]);
+
+  // Show error toast when auth error occurs
+  useEffect(() => {
+    if (error) {
+      dispatch(showToast({
+        message: error,
+        type: 'error',
+      }));
+    }
+  }, [error, dispatch]);
 
   const login = async (email, password) => {
     try {
-      const res = await axios.post('/api/auth/login', { email, password });
-      const { token: newToken } = res.data;
-      setToken(newToken);
-      localStorage.setItem('token', newToken);
-      setUser({ email });
+      await dispatch(loginUser({ email, password })).unwrap();
+      dispatch(showToast({
+        message: 'Login successful!',
+        type: 'success',
+      }));
     } catch (error) {
       throw error;
     }
@@ -39,22 +55,26 @@ export const AuthProvider = ({ children }) => {
         company: additionalData?.company || ''
       };
       console.log('Signup data:', signupData); // Debug log
-      const res = await axios.post('/api/auth/register', signupData);
-      // Registration successful, but user needs to verify email before login
-      return res.data;
+      await dispatch(registerUser(signupData)).unwrap();
+      dispatch(showToast({
+        message: 'Account created successfully! Please log in.',
+        type: 'success',
+      }));
     } catch (error) {
       throw error;
     }
   };
 
   const logout = () => {
-    setToken(null);
-    setUser(null);
-    localStorage.removeItem('token');
+    dispatch(logoutUser());
+    dispatch(showToast({
+      message: 'Logged out successfully',
+      type: 'info',
+    }));
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, login, signup, logout }}>
+    <AuthContext.Provider value={{ user, token, isAuthenticated, loading, login, signup, logout }}>
       {children}
     </AuthContext.Provider>
   );

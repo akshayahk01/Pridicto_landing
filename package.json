@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@emailjs/browser": "^4.4.1",
+    "@reduxjs/toolkit": "^2.10.1",
     "axios": "^1.4.0",
     "emailjs-com": "^3.2.0",
     "framer-motion": "^10.18.0",
@@ -23,12 +24,14 @@
     "react-hook-form": "^7.66.0",
     "react-icons": "^4.10.1",
     "react-joyride": "^2.9.3",
+    "react-redux": "^9.2.0",
     "react-router-dom": "^7.9.5",
     "react-share": "^5.2.2",
     "react-simple-chatbot": "^0.6.1",
     "react-tooltip": "^5.30.0",
     "react-tsparticles": "^2.12.2",
-    "recharts": "^2.6.2"
+    "recharts": "^2.6.2",
+    "redux-persist": "^6.0.0"
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^5.1.1",

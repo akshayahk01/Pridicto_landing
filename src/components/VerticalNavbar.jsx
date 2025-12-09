@@ -41,7 +41,7 @@ export default function VerticalNavbar({ dark: propDark, setDark: propSetDark, i
   };
 
   const navItems = [
-    { to: '/home', label: 'Home', icon: FiHome },
+    { to: '/', label: 'Home', icon: FiHome },
     { to: '/about', label: 'About', icon: FiInfo },
     { to: '/services', label: 'Services', icon: FiBriefcase },
     { to: '/estimate', label: 'Estimate', icon: FiTrendingUp },

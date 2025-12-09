@@ -2,11 +2,23 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import Layout from '../components/Layout';
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContainer, LineChart, Line } from 'recharts';
-import { FaDownload, FaBalanceScale } from 'react-icons/fa';
+import { FaDownload, FaBalanceScale, FaWifi, FaExclamationTriangle } from 'react-icons/fa';
+import { motion } from 'framer-motion';
+import SuggestionBox from '../components/SuggestionBox';
+import PersonalizedSuggestions from '../components/PersonalizedSuggestions';
+import RealtimeMetricsChart from '../components/RealtimeMetricsChart';
+import RealtimeActivityFeed from '../components/RealtimeActivityFeed';
+import NotificationCenter from '../components/NotificationCenter';
+import { useSelector } from 'react-redux';
+import { connectWebSocket, disconnectWebSocket, isWebSocketConnected } from '../services/websocket';
 
 export default function Dashboard() {
   const [dark, setDark] = useState(false);
   const [estimate, setEstimate] = useState(null);
+  const [isConnected, setIsConnected] = useState(false);
+  const [realtimeMetrics, setRealtimeMetrics] = useState([]);
+  const [activityFeed, setActivityFeed] = useState([]);
+  const [notifications, setNotifications] = useState([]);
 
   useEffect(() => {
     const saved = localStorage.getItem('predicto_theme');
@@ -41,22 +53,84 @@ export default function Dashboard() {
         ]
       });
     }
-  }, []);
+
+    // Initialize realtime features
+    if (user?.id) {
+      connectWebSocket(
+        user.id,
+        (metrics) => setRealtimeMetrics(prev => [...prev.slice(-9), metrics]),
+        (projects) => {
+          // Update project data
+          console.log('Projects updated:', projects);
+        },
+        (activity) => setActivityFeed(prev => [activity, ...prev.slice(0, 9)]),
+        (team) => {
+          // Update team data
+          console.log('Team updated:', team);
+        },
+        (notification) => setNotifications(prev => [notification, ...prev.slice(0, 4)])
+      );
+    }
+
+    // Check connection status
+    const checkConnection = () => {
+      setIsConnected(isWebSocketConnected());
+    };
+    checkConnection();
+    const interval = setInterval(checkConnection, 5000);
+
+    return () => {
+      disconnectWebSocket();
+      clearInterval(interval);
+    };
+  }, [user?.id]);
 
   const exportPDF = () => {
     alert('PDF export functionality would be implemented here.');
   };
 
   const COLORS = ['#6366f1', '#10b981', '#f59e0b', '#ef4444'];
+  const { user } = useSelector((state) => state.auth);
 
   return (
     <Layout>
       <div className={`min-h-screen transition-colors duration-500 ${dark ? 'bg-slate-900 text-gray-100':'bg-white text-gray-800'}`}>
         <main className="pt-28 pb-16 max-w-7xl mx-auto px-6 space-y-12">
         <div className="text-center">
-          <h1 className="text-4xl font-bold">Your Estimation Dashboard</h1>
-          <p className="text-gray-500 dark:text-gray-300 mt-2">View your project estimates and insights.</p>
+          <motion.h1
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="text-4xl font-bold"
+          >
+            Your Estimation Dashboard
+          </motion.h1>
+          <motion.p
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            className="text-gray-500 dark:text-gray-300 mt-2"
+          >
+            View your project estimates and insights.
+          </motion.p>
         </div>
+
+        {/* Connection Status */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.5, delay: 0.3 }}
+          className="flex justify-center"
+        >
+          <div className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium ${
+            isConnected
+              ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+              : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+          }`}>
+            {isConnected ? <FaWifi className="text-green-600" /> : <FaExclamationTriangle className="text-red-600" />}
+            {isConnected ? 'Realtime Connected' : 'Connection Lost'}
+          </div>
+        </motion.div>
 
         {estimate && (
           <>
@@ -115,6 +189,36 @@ export default function Dashboard() {
                   <Line type="monotone" dataKey="roi" stroke="#10b981" strokeWidth={2} />
                 </LineChart>
               </ResponsiveContainer>
+            </div>
+
+            {/* Realtime Features */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.4 }}
+              className="grid lg:grid-cols-3 gap-6"
+            >
+              <div className="lg:col-span-2">
+                <RealtimeMetricsChart data={realtimeMetrics} />
+              </div>
+              <div className="space-y-6">
+                <NotificationCenter notifications={notifications} />
+                <RealtimeActivityFeed activities={activityFeed} />
+              </div>
+            </motion.div>
+
+            {/* AI-Powered Personalized Suggestions */}
+            <div className="grid md:grid-cols-2 gap-6">
+              <PersonalizedSuggestions 
+                userId={user?.id} 
+                limit={3}
+                className="md:col-span-1"
+              />
+              <SuggestionBox 
+                context="dashboard" 
+                maxSuggestions={3}
+                className="md:col-span-1"
+              />
             </div>
 
             <div className="flex gap-4 justify-center">

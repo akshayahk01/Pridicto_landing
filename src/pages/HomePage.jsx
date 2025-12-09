@@ -1,11 +1,12 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Layout from "../components/Layout";
 import Footer from "../components/Footer";
-import DemoSection from "../components/DemoSection";
 import FeedbackModal from "../components/FeedbackModal";
-import { motion } from "framer-motion";
+import RealtimeActivityFeed from "../components/RealtimeActivityFeed";
+import { motion, useAnimation, useInView } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { DollarSign, Clock, Zap, Target } from "lucide-react"; // icons
+import { DollarSign, Clock, Zap, Target, Users, TrendingUp, Award, Activity } from "lucide-react"; // icons
+import { useRef } from "react";
 
 // ---------------------------
 // Reusable Button
@@ -70,6 +71,143 @@ const FloatingBlob = ({ className = "", style = {}, delay = 0, size = 220 }) => 
     </svg>
   </motion.div>
 );
+
+// ---------------------------
+// Animated Counter Component
+// ---------------------------
+const AnimatedCounter = ({ end, duration = 2000, suffix = "" }) => {
+  const [count, setCount] = useState(0);
+  const ref = useRef(null);
+  const isInView = useInView(ref, { once: true });
+
+  useEffect(() => {
+    if (isInView) {
+      let startTime = null;
+      const animate = (currentTime) => {
+        if (!startTime) startTime = currentTime;
+        const progress = Math.min((currentTime - startTime) / duration, 1);
+        setCount(Math.floor(progress * end));
+        if (progress < 1) requestAnimationFrame(animate);
+      };
+      requestAnimationFrame(animate);
+    }
+  }, [isInView, end, duration]);
+
+  return <span ref={ref}>{count}{suffix}</span>;
+};
+
+// ---------------------------
+// Live Statistics Section
+// ---------------------------
+const LiveStatsSection = () => {
+  const stats = [
+    { icon: Users, label: "Active Users", value: 15420, suffix: "+", color: "from-blue-500 to-cyan-500" },
+    { icon: TrendingUp, label: "Projects Completed", value: 8920, suffix: "+", color: "from-green-500 to-emerald-500" },
+    { icon: Award, label: "Accuracy Rate", value: 99, suffix: "%", color: "from-purple-500 to-pink-500" },
+    { icon: Activity, label: "Real-time Updates", value: 247, suffix: "/min", color: "from-orange-500 to-red-500" },
+  ];
+
+  return (
+    <section className="py-16 bg-gradient-to-r from-indigo-50/50 to-purple-50/50 dark:from-slate-800/50 dark:to-slate-700/50 rounded-3xl mx-4 md:mx-0">
+      <div className="max-w-6xl mx-auto px-6">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="text-center mb-12"
+        >
+          <h2 className="text-3xl md:text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600 mb-4">
+            Live Platform Statistics
+          </h2>
+          <p className="text-gray-600 dark:text-gray-300 text-lg">
+            Real-time metrics showing our growing community and success
+          </p>
+        </motion.div>
+
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+          {stats.map((stat, index) => (
+            <motion.div
+              key={stat.label}
+              initial={{ opacity: 0, scale: 0.8 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              transition={{ delay: index * 0.1, duration: 0.5 }}
+              whileHover={{ scale: 1.05, y: -5 }}
+              className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-white/20 hover:shadow-2xl transition-all duration-300"
+            >
+              <div className={`w-12 h-12 rounded-xl bg-gradient-to-r ${stat.color} flex items-center justify-center mb-4 mx-auto`}>
+                <stat.icon size={24} className="text-white" />
+              </div>
+              <div className="text-center">
+                <div className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-1">
+                  <AnimatedCounter end={stat.value} suffix={stat.suffix} />
+                </div>
+                <p className="text-sm text-gray-600 dark:text-gray-400 font-medium">{stat.label}</p>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+
+        {/* Progress bars for visual appeal */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
+          transition={{ delay: 0.5 }}
+          className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6"
+        >
+          <div className="bg-white/60 dark:bg-slate-800/60 rounded-xl p-4 backdrop-blur-sm">
+            <div className="flex justify-between items-center mb-2">
+              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">User Satisfaction</span>
+              <span className="text-sm font-bold text-indigo-600">98%</span>
+            </div>
+            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+              <motion.div
+                initial={{ width: 0 }}
+                whileInView={{ width: "98%" }}
+                viewport={{ once: true }}
+                transition={{ duration: 2, delay: 0.7 }}
+                className="bg-gradient-to-r from-indigo-500 to-purple-500 h-2 rounded-full"
+              />
+            </div>
+          </div>
+
+          <div className="bg-white/60 dark:bg-slate-800/60 rounded-xl p-4 backdrop-blur-sm">
+            <div className="flex justify-between items-center mb-2">
+              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">On-Time Delivery</span>
+              <span className="text-sm font-bold text-green-600">95%</span>
+            </div>
+            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+              <motion.div
+                initial={{ width: 0 }}
+                whileInView={{ width: "95%" }}
+                viewport={{ once: true }}
+                transition={{ duration: 2, delay: 0.9 }}
+                className="bg-gradient-to-r from-green-500 to-emerald-500 h-2 rounded-full"
+              />
+            </div>
+          </div>
+
+          <div className="bg-white/60 dark:bg-slate-800/60 rounded-xl p-4 backdrop-blur-sm">
+            <div className="flex justify-between items-center mb-2">
+              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Cost Accuracy</span>
+              <span className="text-sm font-bold text-purple-600">97%</span>
+            </div>
+            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+              <motion.div
+                initial={{ width: 0 }}
+                whileInView={{ width: "97%" }}
+                viewport={{ once: true }}
+                transition={{ duration: 2, delay: 1.1 }}
+                className="bg-gradient-to-r from-purple-500 to-pink-500 h-2 rounded-full"
+              />
+            </div>
+          </div>
+        </motion.div>
+      </div>
+    </section>
+  );
+};
 
 // ---------------------------
 // Main HomePage
@@ -193,6 +331,16 @@ export default function HomePage() {
           </motion.div>
         </section>
 
+        {/* Live Statistics Section */}
+        <section className="mt-16">
+          <LiveStatsSection />
+        </section>
+
+        {/* Realtime Activity Feed */}
+        <section className="mt-16">
+          <RealtimeActivityFeed />
+        </section>
+
         {/* Features grid */}
         <section className="mt-14">
           <div className="text-center max-w-3xl mx-auto mb-8">
@@ -207,10 +355,7 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* Demo section (keeps your component) */}
-        <section className="mt-16">
-          <DemoSection />
-        </section>
+
 
         {/* Estimation Highlights with analytics image and parallax */}
         <motion.section initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.7 }} className="grid md:grid-cols-12 gap-8 items-center mt-16">

@@ -1,8 +1,8 @@
-import React from 'react';
+import React, { useState, useMemo } from 'react';
 import Layout from '../components/Layout';
 import Breadcrumb from '../components/Breadcrumb';
 import ServiceCard from '../components/ServiceCard';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import {
   FaFileAlt,
@@ -25,6 +25,12 @@ import {
   FaWrench,
   FaChalkboardTeacher,
   FaBalanceScale,
+  FaFilter,
+  FaSortAmountDown,
+  FaSortAmountUp,
+  FaStar,
+  FaClock,
+  FaDollarSign,
 } from 'react-icons/fa';
 
 const services = [
@@ -219,11 +225,76 @@ const services = [
 
 export default function Services() {
   const navigate = useNavigate();
+  const [selectedCategory, setSelectedCategory] = useState('All');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [sortBy, setSortBy] = useState('default');
+  const [priceRange, setPriceRange] = useState('all');
+
+  // Get unique categories
+  const categories = ['All', ...new Set(services.map(service => service.category))];
+
+  // Filter and sort services
+  const filteredServices = useMemo(() => {
+    let filtered = services;
+
+    // Filter by category
+    if (selectedCategory !== 'All') {
+      filtered = filtered.filter(service => service.category === selectedCategory);
+    }
+
+    // Filter by search query
+    if (searchQuery) {
+      filtered = filtered.filter(service =>
+        service.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        service.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        service.features.some(feature => feature.toLowerCase().includes(searchQuery.toLowerCase()))
+      );
+    }
+
+    // Filter by price range
+    if (priceRange !== 'all') {
+      filtered = filtered.filter(service => {
+        const price = parseInt(service.pricing.replace(/[^\d]/g, ''));
+        switch (priceRange) {
+          case 'under500': return price < 500;
+          case '500to1000': return price >= 500 && price <= 1000;
+          case '1000to1500': return price >= 1000 && price <= 1500;
+          case 'over1500': return price > 1500;
+          default: return true;
+        }
+      });
+    }
+
+    // Sort services
+    switch (sortBy) {
+      case 'price-low':
+        filtered.sort((a, b) => {
+          const priceA = parseInt(a.pricing.replace(/[^\d]/g, ''));
+          const priceB = parseInt(b.pricing.replace(/[^\d]/g, ''));
+          return priceA - priceB;
+        });
+        break;
+      case 'price-high':
+        filtered.sort((a, b) => {
+          const priceA = parseInt(a.pricing.replace(/[^\d]/g, ''));
+          const priceB = parseInt(b.pricing.replace(/[^\d]/g, ''));
+          return priceB - priceA;
+        });
+        break;
+      case 'name':
+        filtered.sort((a, b) => a.title.localeCompare(b.title));
+        break;
+      default:
+        break;
+    }
+
+    return filtered;
+  }, [selectedCategory, searchQuery, sortBy, priceRange]);
 
   return (
     <Layout>
       <div className="min-h-screen bg-gradient-to-b from-indigo-50 via-white to-indigo-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 text-gray-800 dark:text-gray-100">
-        <main className="pt-28 max-w-7xl mx-auto px-6 pb-16 space-y-12">
+        <main className="pt-28 max-w-8xl mx-auto px-6 pb-16 space-y-12">
         <Breadcrumb />
         <motion.section
           initial={{ opacity: 0, y: 30 }}
@@ -238,30 +309,166 @@ export default function Services() {
           </p>
         </motion.section>
 
+        {/* Professional Filter Section */}
+        <motion.section
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-gray-200 dark:border-slate-700 p-6"
+        >
+          <div className="flex items-center gap-2 mb-6">
+            <FaFilter className="text-indigo-600 text-xl" />
+            <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100">Filter & Sort Services</h2>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {/* Search */}
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                Search Services
+              </label>
+              <div className="relative">
+                <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Search by title, description..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100"
+                />
+              </div>
+            </div>
+
+            {/* Category Filter */}
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                Category
+              </label>
+              <select
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+                className="w-full px-4 py-3 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100"
+              >
+                {categories.map(category => (
+                  <option key={category} value={category}>{category}</option>
+                ))}
+              </select>
+            </div>
+
+            {/* Price Range Filter */}
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                <FaDollarSign className="inline mr-1" />
+                Price Range
+              </label>
+              <select
+                value={priceRange}
+                onChange={(e) => setPriceRange(e.target.value)}
+                className="w-full px-4 py-3 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100"
+              >
+                <option value="all">All Prices</option>
+                <option value="under500">Under $500</option>
+                <option value="500to1000">$500 - $1,000</option>
+                <option value="1000to1500">$1,000 - $1,500</option>
+                <option value="over1500">Over $1,500</option>
+              </select>
+            </div>
+
+            {/* Sort Options */}
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                Sort By
+              </label>
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+                className="w-full px-4 py-3 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100"
+              >
+                <option value="default">Default Order</option>
+                <option value="name">Name (A-Z)</option>
+                <option value="price-low">Price: Low to High</option>
+                <option value="price-high">Price: High to Low</option>
+              </select>
+            </div>
+          </div>
+
+          {/* Results Summary */}
+          <div className="mt-6 pt-6 border-t border-gray-200 dark:border-slate-600">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <span className="text-sm text-gray-600 dark:text-gray-400">
+                  Showing {filteredServices.length} of {services.length} services
+                </span>
+                {(selectedCategory !== 'All' || searchQuery || priceRange !== 'all' || sortBy !== 'default') && (
+                  <button
+                    onClick={() => {
+                      setSelectedCategory('All');
+                      setSearchQuery('');
+                      setPriceRange('all');
+                      setSortBy('default');
+                    }}
+                    className="text-sm text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 font-medium"
+                  >
+                    Clear all filters
+                  </button>
+                )}
+              </div>
+              <div className="flex items-center gap-2">
+                <FaClock className="text-green-500" />
+                <span className="text-sm text-green-600 dark:text-green-400 font-medium">
+                  Real-time updates available
+                </span>
+              </div>
+            </div>
+          </div>
+        </motion.section>
+
+        {/* Services Grid */}
         <motion.section
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.2 }}
-          className="grid sm:grid-cols-2 md:grid-cols-3 gap-8"
+          className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8"
         >
-          {services.map((service, index) => (
-            <motion.div
-              key={service.id}
-              initial={{ opacity: 0, y: 40 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 }}
-            >
-              <ServiceCard
-                icon={service.icon}
-                title={service.title}
-                description={service.description}
-                pricing={service.pricing}
-                features={service.features}
-                onLearnMore={() => navigate(`/services/${service.id}`)}
-              />
-            </motion.div>
-          ))}
+          <AnimatePresence>
+            {filteredServices.map((service, index) => (
+              <motion.div
+                key={service.id}
+                initial={{ opacity: 0, y: 40 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -40 }}
+                transition={{ delay: index * 0.05 }}
+                layout
+              >
+                <ServiceCard
+                  icon={service.icon}
+                  title={service.title}
+                  description={service.description}
+                  pricing={service.pricing}
+                  features={service.features}
+                  onLearnMore={() => navigate(`/services/${service.id}`)}
+                />
+              </motion.div>
+            ))}
+          </AnimatePresence>
         </motion.section>
+
+        {/* No Results Message */}
+        {filteredServices.length === 0 && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="text-center py-16"
+          >
+            <FaSearch className="mx-auto text-6xl text-gray-300 dark:text-slate-600 mb-4" />
+            <h3 className="text-xl font-semibold text-gray-600 dark:text-gray-400 mb-2">
+              No services found
+            </h3>
+            <p className="text-gray-500 dark:text-gray-500">
+              Try adjusting your filters or search terms
+            </p>
+          </motion.div>
+        )}
         </main>
       </div>
     </Layout>

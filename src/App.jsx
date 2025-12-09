@@ -24,6 +24,7 @@ const Comparison = lazy(() => import('./pages/Comparison'));
 const Login = lazy(() => import('./pages/Login'));
 const AdminPanel = lazy(() => import('./pages/AdminPanel'));
 const FAQ = lazy(() => import('./pages/FAQ'));
+const Suggestions = lazy(() => import('./pages/Suggestions'));
 
 export default function App() {
   const { theme } = useSelector((state) => state.ui);
@@ -56,6 +57,7 @@ export default function App() {
             <Route path="/global-presence" element={<GlobalPresence />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/faq" element={<FAQ />} />
+            <Route path="/suggestions" element={<Suggestions />} />
           </Routes>
           <Chatbot />
         </Suspense>

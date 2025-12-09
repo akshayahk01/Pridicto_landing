@@ -3,6 +3,9 @@ import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import Breadcrumb from '../components/Breadcrumb';
 import ShareButtons from '../components/ShareButtons';
+import SuggestionBox from '../components/SuggestionBox';
+import PersonalizedSuggestions from '../components/PersonalizedSuggestions';
+import { useSelector } from 'react-redux';
 import { motion } from 'framer-motion';
 import { Globe2, Briefcase, Target, Users, PieChart, LineChart, BarChart3 } from "lucide-react";
 
@@ -192,6 +195,23 @@ export default function Portfolio() {
             />
           </motion.div>
         </section>
+
+        {/* AI-Powered Suggestions */}
+        <motion.section
+          initial={{ opacity: 0, y: 40 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="grid md:grid-cols-2 gap-8"
+        >
+          <PersonalizedSuggestions 
+            userId={useSelector((state) => state.auth.user)?.id} 
+            limit={3}
+          />
+          <SuggestionBox 
+            context="portfolio" 
+            maxSuggestions={3}
+          />
+        </motion.section>
 
         {/* CTA */}
         <motion.section

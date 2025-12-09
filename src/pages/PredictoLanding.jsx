@@ -5,6 +5,7 @@ import React from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { ArrowRight, Sparkles, Cpu, CheckCircle } from "lucide-react";
+import TestimonialsCarousel from "../components/TestimonialsCarousel";
 
 export default function PredictoAIModern() {
   return (
@@ -24,38 +25,88 @@ export default function PredictoAIModern() {
       </nav>
 
       {/* ================= HERO ================= */}
-      <section className="relative grid md:grid-cols-2 items-center px-12 py-24 max-w-7xl mx-auto">
+      <section className="relative grid md:grid-cols-2 items-center px-12 py-24 max-w-7xl mx-auto overflow-hidden">
         <div className="absolute inset-0 opacity-30 bg-[radial-gradient(circle_at_20%_20%,#6b00ff,transparent_40%),radial-gradient(circle_at_80%_80%,#00d0ff,transparent_40%)]"></div>
 
-        <motion.div initial={{ opacity: 0, x: -50 }} animate={{ opacity: 1, x: 0 }} className="relative z-10 space-y-6">
-          <div className="inline-flex items-center gap-2 bg-white/10 px-4 py-2 rounded-full backdrop-blur-xl text-emerald-300">
-            <Sparkles className="w-4 h-4" /> AI-POWERED PREDICTION
-          </div>
+        <motion.div
+          initial={{ opacity: 0, x: -50 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.8, ease: "easeOut" }}
+          className="relative z-10 space-y-8"
+        >
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2, duration: 0.6 }}
+            className="inline-flex items-center gap-2 bg-gradient-to-r from-emerald-500/20 to-blue-500/20 px-6 py-3 rounded-full backdrop-blur-xl border border-emerald-400/30 text-emerald-300 font-medium shadow-lg shadow-emerald-500/20"
+          >
+            <Sparkles className="w-5 h-5 animate-pulse" />
+            AI-POWERED PREDICTION ENGINE
+          </motion.div>
 
-          <h2 className="text-6xl font-extrabold leading-tight">
-            Build Faster With <span className="text-emerald-400">AI Estimation</span>
-          </h2>
+          <motion.h2
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4, duration: 0.8 }}
+            className="text-5xl md:text-7xl font-black leading-tight bg-gradient-to-r from-white via-emerald-100 to-blue-100 bg-clip-text text-transparent"
+          >
+            Build Faster With{" "}
+            <span className="bg-gradient-to-r from-emerald-400 via-teal-400 to-blue-400 bg-clip-text text-transparent animate-pulse">
+              AI Estimation
+            </span>
+          </motion.h2>
 
-          <p className="text-slate-300 text-lg max-w-lg">
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.6, duration: 0.6 }}
+            className="text-slate-300 text-xl max-w-xl leading-relaxed"
+          >
             Predict cost, timeline, team structure & risk with next-gen neural engines.
-          </p>
+            Transform your project planning with unprecedented accuracy and speed.
+          </motion.p>
 
-          <div className="flex gap-4 mt-6">
-            <button
-              onClick={() => alert("Start free clicked")}
-              className="px-8 py-4 rounded-xl bg-gradient-to-r from-emerald-500 to-blue-500 text-white font-semibold shadow-lg hover:scale-105 transition-all"
-              aria-label="Start Free"
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.8, duration: 0.6 }}
+            className="flex flex-col sm:flex-row gap-4 mt-8"
+          >
+            <Link
+              to="/estimate"
+              className="group px-10 py-5 rounded-2xl bg-gradient-to-r from-emerald-500 via-teal-500 to-blue-500 text-white font-bold text-lg shadow-2xl shadow-emerald-500/30 hover:shadow-emerald-500/50 hover:scale-105 transition-all duration-300 flex items-center justify-center gap-3"
             >
-              Start Free
-            </button>
+              Start Free Trial
+              <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+            </Link>
             <button
               onClick={() => alert("Watch demo clicked")}
-              className="px-8 py-4 rounded-xl border border-white/20 bg-white/5 backdrop-blur-xl hover:bg-white/10 transition-all"
-              aria-label="Watch Demo"
+              className="group px-10 py-5 rounded-2xl border-2 border-white/30 bg-white/5 backdrop-blur-xl hover:bg-white/10 hover:border-emerald-400/50 transition-all duration-300 text-lg font-semibold flex items-center justify-center gap-3"
             >
+              <Cpu className="w-5 h-5 group-hover:rotate-12 transition-transform" />
               Watch Demo
             </button>
-          </div>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 1.0, duration: 0.6 }}
+            className="flex items-center gap-6 pt-6 text-sm text-slate-400"
+          >
+            <div className="flex items-center gap-2">
+              <CheckCircle className="w-4 h-4 text-emerald-400" />
+              No credit card required
+            </div>
+            <div className="flex items-center gap-2">
+              <CheckCircle className="w-4 h-4 text-emerald-400" />
+              14-day free trial
+            </div>
+            <div className="flex items-center gap-2">
+              <CheckCircle className="w-4 h-4 text-emerald-400" />
+              Cancel anytime
+            </div>
+          </motion.div>
         </motion.div>
 
         {/* RIGHT PREVIEW */}
@@ -71,19 +122,93 @@ export default function PredictoAIModern() {
 
       {/* ================= FEATURES ================= */}
       <section className="py-24 bg-[#120026]">
-        <h3 className="text-4xl font-bold text-center mb-16">AI Features To Power Your Workflow</h3>
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+          className="text-center mb-16"
+        >
+          <h3 className="text-4xl font-bold mb-4">AI Features To Power Your Workflow</h3>
+          <p className="text-slate-400 text-lg max-w-2xl mx-auto">
+            Advanced neural networks analyze your project requirements to deliver precise, actionable insights
+          </p>
+        </motion.div>
 
         <div className="grid md:grid-cols-3 gap-10 max-w-7xl mx-auto px-12">
-          {["Cost Intelligence", "Timeline Prediction", "Team Optimization", "Risk Neural Scan", "Tech Stack Mapping", "Exportable Reports"].map(
-            (f) => (
-              <motion.div whileHover={{ scale: 1.05 }} key={f} className="p-10 bg-white/5 backdrop-blur-xl rounded-3xl border border-white/10 shadow-xl hover:shadow-emerald-500/30 transition-all">
-                <h4 className="text-xl font-semibold text-emerald-300">{f}</h4>
-                <p className="text-slate-400 text-sm mt-2">
-                  Powered by multi-layer neural decision models.
-                </p>
+          {[
+            {
+              title: "Cost Intelligence",
+              desc: "Predict project costs with 90%+ accuracy using historical data and market trends.",
+              icon: "💰",
+              color: "from-emerald-500 to-teal-500"
+            },
+            {
+              title: "Timeline Prediction",
+              desc: "AI-powered scheduling that accounts for team velocity and project complexity.",
+              icon: "⏱️",
+              color: "from-blue-500 to-cyan-500"
+            },
+            {
+              title: "Team Optimization",
+              desc: "Recommend optimal team composition and skill requirements for success.",
+              icon: "👥",
+              color: "from-purple-500 to-pink-500"
+            },
+            {
+              title: "Risk Neural Scan",
+              desc: "Identify potential risks and bottlenecks before they impact your timeline.",
+              icon: "🔍",
+              color: "from-orange-500 to-red-500"
+            },
+            {
+              title: "Tech Stack Mapping",
+              desc: "Suggest optimal technology stacks based on project requirements and goals.",
+              icon: "⚡",
+              color: "from-indigo-500 to-purple-500"
+            },
+            {
+              title: "Exportable Reports",
+              desc: "Generate comprehensive PDF reports with actionable recommendations.",
+              icon: "📊",
+              color: "from-green-500 to-emerald-500"
+            }
+          ].map((feature, index) => (
+            <motion.div
+              key={feature.title}
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: index * 0.1 }}
+              whileHover={{
+                scale: 1.05,
+                y: -5,
+                transition: { duration: 0.2 }
+              }}
+              className="group relative p-8 bg-white/5 backdrop-blur-xl rounded-3xl border border-white/10 shadow-xl hover:shadow-2xl hover:shadow-emerald-500/20 transition-all duration-300 cursor-pointer overflow-hidden"
+            >
+              {/* Background gradient on hover */}
+              <div className={`absolute inset-0 bg-gradient-to-br ${feature.color} opacity-0 group-hover:opacity-5 transition-opacity duration-300`} />
+
+              {/* Floating icon */}
+              <motion.div
+                whileHover={{ rotate: 10, scale: 1.1 }}
+                className="text-4xl mb-4 inline-block"
+              >
+                {feature.icon}
               </motion.div>
-            )
-          )}
+
+              <h4 className="text-xl font-semibold text-emerald-300 mb-3 group-hover:text-emerald-200 transition-colors">
+                {feature.title}
+              </h4>
+              <p className="text-slate-400 text-sm leading-relaxed group-hover:text-slate-300 transition-colors">
+                {feature.desc}
+              </p>
+
+              {/* Subtle shine effect */}
+              <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
+            </motion.div>
+          ))}
         </div>
       </section>
 

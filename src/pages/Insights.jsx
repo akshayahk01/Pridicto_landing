@@ -1,6 +1,9 @@
 import React from 'react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
+import SuggestionBox from '../components/SuggestionBox';
+import PersonalizedSuggestions from '../components/PersonalizedSuggestions';
+import { useSelector } from 'react-redux';
 import { motion } from 'framer-motion';
 
 const articles = [
@@ -28,6 +31,23 @@ export default function Insights(){
             </div>
           ))}
         </section>
+
+        {/* AI-Powered Suggestions for Insights */}
+        <motion.section 
+          initial={{opacity:0,y:30}} 
+          animate={{opacity:1,y:0}} 
+          transition={{delay:0.3}}
+          className="grid md:grid-cols-2 gap-8"
+        >
+          <PersonalizedSuggestions 
+            userId={useSelector((state) => state.auth.user)?.id} 
+            limit={3}
+          />
+          <SuggestionBox 
+            context="insights" 
+            maxSuggestions={3}
+          />
+        </motion.section>
       </main>
       <Footer/>
     </div>

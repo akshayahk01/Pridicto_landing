@@ -32,8 +32,13 @@ export const fetchAnalytics = createAsyncThunk(
   'analytics/fetchAnalytics',
   async (params = {}, { rejectWithValue }) => {
     try {
+      const token = localStorage.getItem('authToken');
       const queryString = new URLSearchParams(params).toString();
-      const response = await fetch(`/api/analytics/dashboard?${queryString}`);
+      const response = await fetch(`/api/analytics/dashboard?${queryString}`, {
+        headers: {
+          ...(token && { 'Authorization': `Bearer ${token}` }),
+        },
+      });
       if (!response.ok) throw new Error('Failed to fetch analytics');
       return await response.json();
     } catch (error) {

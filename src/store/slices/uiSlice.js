@@ -20,11 +20,7 @@ const initialState = {
     results: [],
   },
   breadcrumbs: [],
-  toast: {
-    show: false,
-    message: '',
-    type: 'info', // 'success', 'error', 'warning', 'info'
-  },
+  toasts: [],
 };
 
 const uiSlice = createSlice({
@@ -109,14 +105,23 @@ const uiSlice = createSlice({
       state.breadcrumbs.pop();
     },
     showToast: (state, action) => {
-      state.toast = {
-        show: true,
-        message: action.payload.message,
+      const toast = {
+        id: `toast_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        title: action.payload.title || '',
+        message: action.payload.message || '',
         type: action.payload.type || 'info',
+        timestamp: Date.now(),
       };
+      state.toasts.push(toast);
     },
     hideToast: (state) => {
-      state.toast.show = false;
+      // Hide the first toast (for backward compatibility)
+      if (state.toasts.length > 0) {
+        state.toasts.shift();
+      }
+    },
+    removeToast: (state, action) => {
+      state.toasts = state.toasts.filter(toast => toast.id !== action.payload);
     },
   },
 });
@@ -142,6 +147,13 @@ export const {
   removeBreadcrumb,
   showToast,
   hideToast,
+  removeToast,
 } = uiSlice.actions;
+
+// Toast action creators
+export const createSuccessToast = (title, message) => showToast({ message: `${title}: ${message}`, type: 'success' });
+export const createErrorToast = (title, message) => showToast({ message: `${title}: ${message}`, type: 'error' });
+export const createWarningToast = (title, message) => showToast({ message: `${title}: ${message}`, type: 'warning' });
+export const createInfoToast = (title, message) => showToast({ message: `${title}: ${message}`, type: 'info' });
 
 export default uiSlice.reducer;

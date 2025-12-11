@@ -3,10 +3,12 @@ import { Routes, Route } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import Chatbot from './components/Chatbot';
 import { AuthProvider } from './context/AuthContext';
+import { ThemeProvider } from './context/ThemeContext';
 import ErrorBoundary from './components/ErrorBoundary';
 import LoadingSpinner from './components/LoadingSpinner';
 import Toast from './components/Toast';
 import useAnalytics from './hooks/useAnalytics';
+import ForgotPassword from './pages/ForgotPassword';
 
 // Lazy-loaded pages
 const PredictoLanding = lazy(() => import('./pages/PredictoLanding'));
@@ -37,31 +39,34 @@ export default function App() {
 
   return (
     <ErrorBoundary>
-      <AuthProvider>
-        <Suspense fallback={<LoadingSpinner size="lg" message="Loading page..." />}>
-          <Toast />
-          <Routes>
-            <Route path="/" element={<PredictoLanding />} />
-            <Route path="/home" element={<HomePage />} />
-            <Route path="/estimate" element={<EstimationForm />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/comparison" element={<Comparison />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/signup" element={<Login />} />
-            <Route path="/admin" element={<AdminPanel />} />
-            <Route path="/about" element={<About />} />
-            <Route path="/services" element={<Services />} />
-            <Route path="/services/:id" element={<ServiceDetail />} />
-            <Route path="/portfolio" element={<Portfolio />} />
-            <Route path="/insights" element={<Insights />} />
-            <Route path="/global-presence" element={<GlobalPresence />} />
-            <Route path="/contact" element={<Contact />} />
-            <Route path="/faq" element={<FAQ />} />
-            <Route path="/suggestions" element={<Suggestions />} />
-          </Routes>
-          <Chatbot />
-        </Suspense>
-      </AuthProvider>
+      <ThemeProvider>
+        <AuthProvider>
+          <Suspense fallback={<LoadingSpinner size="lg" message="Loading page..." />}>
+            <Toast />
+            <Routes>
+              <Route path="/" element={<PredictoLanding />} />
+              <Route path="/home" element={<HomePage />} />
+              <Route path="/estimate" element={<EstimationForm />} />
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/comparison" element={<Comparison />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/signup" element={<Login />} />
+              <Route path="/forgot-password" element={<ForgotPassword />} />
+              <Route path="/admin" element={<AdminPanel />} />
+              <Route path="/about" element={<About />} />
+              <Route path="/services" element={<Services />} />
+              <Route path="/services/:id" element={<ServiceDetail />} />
+              <Route path="/portfolio" element={<Portfolio />} />
+              <Route path="/insights" element={<Insights />} />
+              <Route path="/global-presence" element={<GlobalPresence />} />
+              <Route path="/contact" element={<Contact />} />
+              <Route path="/faq" element={<FAQ />} />
+              <Route path="/suggestions" element={<Suggestions />} />
+            </Routes>
+            <Chatbot />
+          </Suspense>
+        </AuthProvider>
+      </ThemeProvider>
     </ErrorBoundary>
   );
 }

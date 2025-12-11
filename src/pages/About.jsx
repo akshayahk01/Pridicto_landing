@@ -1,367 +1,327 @@
-// src/pages/About.jsx
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Layout from "../components/Layout";
-import Footer from "../components/Footer";
 import { motion } from "framer-motion";
 
-/** Reusable UI components */
-const Button = ({ children, variant = "primary", className = "", ...props }) => {
-  const base =
-    "px-6 py-2 rounded-full font-semibold transition-all active:scale-95";
-  const variants = {
+/* ---------------------------------------------------------
+   Elegant Motion Variants
+--------------------------------------------------------- */
+const fadeUp = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.7, ease: "easeOut" } },
+};
+
+const fadeIn = {
+  hidden: { opacity: 0 },
+  visible: { opacity: 1, transition: { duration: 0.8 } },
+};
+
+const stagger = {
+  hidden: {},
+  visible: { transition: { staggerChildren: 0.15 } },
+};
+
+/* ---------------------------------------------------------
+   UI Components
+--------------------------------------------------------- */
+const Button = ({ children, variant = "primary", ...props }) => {
+  const styles = {
+    base: "px-6 py-2 rounded-full font-semibold transition-all active:scale-95",
     primary:
-      "bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-lg hover:scale-[1.02]",
+      "bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-lg hover:shadow-xl hover:scale-[1.03]",
     airy:
-      "bg-white/10 backdrop-blur text-white border border-white/10 hover:bg-white/20",
-    ghost:
-      "bg-transparent text-white/70 border border-white/10 hover:bg-white/10",
+      "bg-white/10 text-white border border-white/20 backdrop-blur hover:bg-white/20",
+    outline:
+      "border border-white/20 text-white hover:bg-white/10 backdrop-blur",
   };
   return (
-    <button
-      className={`${base} ${variants[variant] || variants.primary} ${className}`}
-      {...props}
-    >
+    <button className={`${styles.base} ${styles[variant]}`} {...props}>
       {children}
     </button>
   );
 };
 
 const StatCard = ({ value, label }) => (
-  <div className="flex flex-col items-start bg-white/80 backdrop-blur rounded-lg px-5 py-4 shadow-md border border-gray-300/50">
-    <div className="text-2xl font-extrabold text-indigo-600">{value}</div>
-    <div className="text-sm text-gray-600 mt-1">{label}</div>
-  </div>
-);
-
-const Feature = ({ title, desc, delay = 0 }) => (
   <motion.div
-    initial={{ opacity: 0, y: 18 }}
-    whileInView={{ opacity: 1, y: 0 }}
-    viewport={{ once: true }}
-    transition={{ duration: 0.6, delay }}
-    className="p-5 bg-white/80 backdrop-blur rounded-2xl shadow border border-gray-300/50"
+    variants={fadeUp}
+    className="flex flex-col bg-white/10 backdrop-blur-lg border border-white/20 rounded-2xl px-6 py-5 shadow-lg"
   >
-    <h3 className="font-semibold text-gray-900">{title}</h3>
-    <p className="text-sm text-gray-600 mt-2">{desc}</p>
+    <div className="text-3xl font-bold text-indigo-300">{value}</div>
+    <div className="text-sm text-slate-200 mt-1">{label}</div>
   </motion.div>
 );
 
-/** ==================== MAIN PAGE ==================== */
+const FeatureCard = ({ title, desc }) => (
+  <motion.div
+    variants={fadeUp}
+    className="p-6 bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl shadow-xl hover:scale-[1.02] transition-all"
+  >
+    <h3 className="font-semibold text-white">{title}</h3>
+    <p className="text-slate-300 mt-2 text-sm">{desc}</p>
+  </motion.div>
+);
+
+/* ---------------------------------------------------------
+   MAIN PAGE
+--------------------------------------------------------- */
 export default function About() {
-  const [darkHero, setDarkHero] = useState(true);
-  const [dark, setDark] = useState(false);
+  const [spotlight, setSpotlight] = useState({ x: 0, y: 0 });
+
+  // Spotlight effect follows mouse
+  const handleMouseMove = (e) => {
+    setSpotlight({ x: e.clientX, y: e.clientY });
+  };
 
   return (
-    <Layout dark={dark} setDark={setDark}>
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 text-gray-900 relative">
-        {/* Background gradients */}
-        <div className="absolute inset-0 -z-10 overflow-hidden">
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 0.15 }}
-            transition={{ duration: 1 }}
-            className="absolute left-10 top-10 w-80 h-80 rounded-full blur-3xl bg-blue-400"
-          ></motion.div>
+    <Layout>
+      <div
+        className="relative min-h-screen bg-gradient-to-br from-slate-900 via-slate-950 to-indigo-950 text-white"
+        onMouseMove={handleMouseMove}
+      >
+        {/* Spotlight */}
+        <div
+          className="pointer-events-none fixed inset-0 z-0"
+          style={{
+            background: `radial-gradient(circle at ${spotlight.x}px ${spotlight.y}px, rgba(255,255,255,0.12), transparent 40%)`,
+          }}
+        />
 
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 0.15 }}
-            transition={{ duration: 1, delay: 1 }}
-            className="absolute right-10 top-52 w-80 h-80 rounded-full blur-3xl bg-purple-400"
-          ></motion.div>
-        </div>
+        {/* Floating Blobs */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 0.35 }}
+          transition={{ duration: 1.2 }}
+          className="absolute -top-20 left-0 w-96 h-96 bg-purple-600 blur-3xl rounded-full opacity-25"
+        />
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 0.35 }}
+          transition={{ duration: 1.2 }}
+          className="absolute bottom-0 right-0 w-[28rem] h-[28rem] bg-indigo-600 blur-3xl rounded-full opacity-20"
+        />
 
-      <main className="pt-28 max-w-7xl mx-auto px-6 pb-20 space-y-20">
+        {/* CONTENT */}
+        <main className="relative z-10 max-w-7xl mx-auto px-6 py-24 space-y-24">
 
-        {/* ================= HERO ================= */}
-        <section className="grid md:grid-cols-2 gap-8 items-center">
-          {/* left side */}
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.7 }}
+          {/* ---------------------------------------------------------
+              HERO SECTION
+          --------------------------------------------------------- */}
+          <motion.section
+            variants={fadeIn}
+            initial="hidden"
+            animate="visible"
+            className="grid md:grid-cols-2 gap-10 items-center"
           >
-            <div
-              className={`rounded-3xl p-10 backdrop-blur border border-gray-300/50 shadow-xl ${
-                darkHero
-                  ? "bg-gradient-to-br from-slate-900/90 to-slate-800/90"
-                  : "bg-white/80"
-              }`}
-            >
-              <div className="flex items-center justify-between mb-4">
-                <span className="text-xs uppercase tracking-wider text-indigo-300">
-                  Enterprise Analytics
-                </span>
-
-                {/* theme switch */}
-                <button
-                  className="w-12 h-6 rounded-full bg-white/20 flex items-center p-1"
-                  onClick={() => setDarkHero(!darkHero)}
-                >
-                  <div
-                    className={`w-4 h-4 rounded-full bg-white transition-all ${
-                      darkHero ? "translate-x-6" : ""
-                    }`}
-                  ></div>
-                </button>
-              </div>
-
-              <h1 className="text-4xl md:text-5xl font-extrabold leading-tight mb-4">
-                Advanced Analytics for{" "}
-                <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-300 to-purple-300">
-                  Accurate Estimation
-                </span>
-              </h1>
-
-              <p className="text-gray-300 mb-6">
-                Predicto delivers real-time feasibility, costing, and timeline
-                predictions using AI models built for Software + Construction.
+            {/* HERO TEXT */}
+            <motion.div variants={fadeUp}>
+              <p className="text-sm uppercase tracking-wider text-indigo-300 font-medium mb-3">
+                About Predicto.ai
               </p>
 
-              <div className="flex gap-3 flex-wrap">
-                <Button onClick={() => window.location.assign("/estimation")}>
-                  Start Estimation
+              <h1 className="text-4xl md:text-5xl font-extrabold leading-tight mb-4">
+                Designed to bring{" "}
+                <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-300 to-purple-300">
+                  intelligence & trust
+                </span>{" "}
+                to estimation.
+              </h1>
+
+              <p className="text-slate-300 text-lg leading-relaxed mb-6">
+                Predicto.ai transforms ambiguous project planning into
+                defensible, data-backed decisions—powered by machine learning,
+                risk modeling, and decades of delivery knowledge.
+              </p>
+
+              <div className="flex gap-4 flex-wrap">
+                <Button variant="primary" onClick={() => (window.location = "/contact")}>
+                  Talk to Our Team
                 </Button>
-                <Button
-                  variant="airy"
-                  onClick={() => window.location.assign("/contact")}
-                >
-                  Book Demo
+                <Button variant="outline" onClick={() => (window.location = "/estimation")}>
+                  Try Predicto
                 </Button>
               </div>
+            </motion.div>
 
-              <div className="flex gap-3 mt-6 flex-wrap">
-                <div className="px-3 py-1 bg-white/10 rounded-full text-sm">
-                  AI Analysis
-                </div>
-                <div className="px-3 py-1 bg-white/10 rounded-full text-sm">
-                  GDPR Ready
-                </div>
-                <div className="px-3 py-1 bg-white/10 rounded-full text-sm">
-                  Enterprise SLA
-                </div>
-              </div>
-            </div>
-          </motion.div>
-
-          {/* Right (analytics image) */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.8 }}
-            className="flex justify-center"
-          >
-            <img
-              src="/assets/analytics-dashboard-hero.webp"
-              alt="Predicto analytics dashboard"
-              className="rounded-3xl shadow-2xl object-cover w-full h-96"
-              onError={(e) => (e.target.src = "/assets/OIP.webp")}
-            />
-          </motion.div>
-        </section>
-
-        {/* ================== STATS ================== */}
-        <section className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <StatCard value="98.4%" label="Accuracy" />
-          <StatCard value="12K+" label="Projects Analyzed" />
-          <StatCard value="52+" label="Industry Models" />
-          <StatCard value="4.9/5" label="User Rating" />
-        </section>
-
-        {/* ================== FEATURES ================= */}
-        <section className="grid md:grid-cols-3 gap-10">
-          <div>
-            <h2 className="text-3xl font-bold mb-3">Why Predicto?</h2>
-            <p className="text-gray-300 mb-5">
-              Remove estimation guesswork using real-time analytics,
-              regulations, and AI-based feasibility models.
-            </p>
-
-            <ul className="space-y-3">
-              <li className="flex gap-3">
-                <span className="text-indigo-400 font-bold">•</span> AI cost &
-                timeline modeling
-              </li>
-              <li className="flex gap-3">
-                <span className="text-indigo-400 font-bold">•</span> Real-time
-                material & labor pricing
-              </li>
-              <li className="flex gap-3">
-                <span className="text-indigo-400 font-bold">•</span> Vendor
-                comparison & risk simulation
-              </li>
-            </ul>
-
-            <Button
-              className="mt-6"
-              variant="ghost"
-              onClick={() => window.location.assign("/services")}
+            {/* HERO IMAGE CARD */}
+            <motion.div
+              variants={fadeUp}
+              className="relative"
             >
-              Explore Services
-            </Button>
-          </div>
-
-          <div className="md:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-6">
-            <Feature
-              title="Precision Costing"
-              desc="AI models trained on historical pricing + market feeds."
-            />
-            <Feature
-              title="Optimized Timelines"
-              desc="Sprint speed forecasting + dependency mapping."
-              delay={0.08}
-            />
-            <Feature
-              title="Feasibility Scoring"
-              desc="Regulation awareness + compliance checks."
-              delay={0.16}
-            />
-            <Feature
-              title="Vendor Simulation"
-              desc="Compare suppliers & materials with scenario testing."
-              delay={0.24}
-            />
-          </div>
-        </section>
-
-        {/* ================= TIMELINE ================= */}
-        <section>
-          <h2 className="text-center text-3xl font-bold mb-10">
-            Our Milestones
-          </h2>
-
-          <div className="relative border-l border-gray-300/50 pl-10 max-w-4xl mx-auto">
-            {[
-              {
-                year: "2021",
-                title: "Research Started",
-                desc: "Model prototyping",
-              },
-              {
-                year: "2022",
-                title: "First Launch",
-                desc: "Construction & software pilot",
-              },
-              {
-                year: "2023",
-                title: "Scaling",
-                desc: "Added pricing feeds & ML tuning",
-              },
-              {
-                year: "2024",
-                title: "Enterprise Rollout",
-                desc: "APIs + SLA + integrations",
-              },
-              {
-                year: "2025",
-                title: "Dual Industry Estimation",
-                desc: "Unified IT + Construction",
-              },
-            ].map((t, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, x: -10 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                transition={{ delay: i * 0.1 }}
-                viewport={{ once: true }}
-                className="mb-10 relative"
-              >
-                <div className="absolute -left-12 w-6 h-6 bg-indigo-500 rounded-full ring-4 ring-blue-50"></div>
-                <div className="text-indigo-400 text-sm">{t.year}</div>
-                <h3 className="text-xl font-semibold">{t.title}</h3>
-                <p className="text-gray-300">{t.desc}</p>
-              </motion.div>
-            ))}
-          </div>
-        </section>
-
-        {/* ================= TEAM ================= */}
-        <section>
-          <h2 className="text-center text-3xl font-bold mb-6">
-            Leadership & Experts
-          </h2>
-
-          <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-6">
-            {[
-              { name: "RISINTERNATIONAL", role: "Founder & CEO", img: "/assets/team1.webp" },
-              { name: "Lead Data Scientist", role: "AI & Modeling", img: "/assets/team2.webp" },
-              { name: "Head of Product", role: "Product & UX", img: "/assets/team3.webp" },
-              { name: "Operations Lead", role: "Enterprise Delivery", img: "/assets/team4.webp" },
-            ].map((m, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                className="p-6 bg-white/80 rounded-2xl border border-gray-300/50 text-center"
-              >
+              <div className="absolute -inset-4 bg-gradient-to-r from-purple-500/20 to-indigo-500/20 blur-3xl rounded-3xl"></div>
+              <div className="relative bg-white/5 backdrop-blur-xl border border-white/10 shadow-2xl rounded-3xl p-6">
                 <img
-                  src={m.img}
-                  alt={m.name}
-                  className="w-28 h-28 rounded-full mx-auto object-cover border-4 border-gray-300 shadow"
+                  src="public/assets/Project-Estimation-Techniques-main (1).jpg"
+                  alt="Analytics"
+                  className="rounded-2xl shadow-xl object-cover w-full h-80"
                 />
-                <div className="mt-3 font-semibold">{m.name}</div>
-                <div className="text-gray-600 text-sm">{m.role}</div>
-              </motion.div>
-            ))}
-          </div>
-        </section>
+              </div>
+            </motion.div>
+          </motion.section>
 
-        {/* ================= TRUST BADGES ================= */}
-        <section className="flex gap-4 flex-wrap justify-center">
-          {[
-            "ISO 27001",
-            "GDPR Compliant",
-            "AES-256 Encryption",
-            "Enterprise SLA",
-          ].map((txt, i) => (
-            <div
-              key={i}
-              className="px-4 py-2 bg-white/80 rounded-full border border-gray-300/50 text-sm"
+          {/* ---------------------------------------------------------
+              STATS
+          --------------------------------------------------------- */}
+          <motion.section
+            variants={stagger}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            className="grid grid-cols-2 md:grid-cols-4 gap-4"
+          >
+            <StatCard value="98.4%" label="Estimation Accuracy" />
+            <StatCard value="12,000+" label="Projects Analysed" />
+            <StatCard value="52+" label="Industry Models" />
+            <StatCard value="4.9 / 5" label="Customer Rating" />
+          </motion.section>
+
+          {/* ---------------------------------------------------------
+              FEATURES (Zig-Zag Layout)
+          --------------------------------------------------------- */}
+          <section className="grid md:grid-cols-3 gap-12 items-start">
+            {/* Left Description */}
+            <motion.div variants={fadeUp} initial="hidden" whileInView="visible">
+              <h2 className="text-3xl font-bold mb-3">
+                What makes Predicto exceptional?
+              </h2>
+              <p className="text-slate-300 mb-6">
+                We combine ML models, industry benchmarks, and governance flows
+                to help enterprises connect planning with reality.
+              </p>
+              <Button variant="outline" onClick={() => (window.location = "/services")}>
+                Explore Our Platform
+              </Button>
+            </motion.div>
+
+            {/* Right Features */}
+            <motion.div
+              variants={stagger}
+              initial="hidden"
+              whileInView="visible"
+              className="md:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-6"
             >
-              {txt}
+              <FeatureCard title="AI Cost Modeling" desc="Predict cost using dynamic pricing feeds & historical behavior." />
+              <FeatureCard title="Timeline Forecasting" desc="Sprint speed prediction, dependency analysis & risk modeling." />
+              <FeatureCard title="Feasibility Analysis" desc="Regulatory checks, compliance scoring, and location constraints." />
+              <FeatureCard title="Scenario Simulation" desc="Compare vendors, strategies, and resource plans instantly." />
+            </motion.div>
+          </section>
+
+          {/* ---------------------------------------------------------
+              TIMELINE
+          --------------------------------------------------------- */}
+          <section>
+            <h2 className="text-center text-3xl font-bold mb-14">
+              Our Journey
+            </h2>
+
+            <div className="relative border-l border-white/20 pl-10 max-w-4xl mx-auto">
+              {[
+                { year: "2021", title: "Research Started", desc: "ML cost modeling prototypes created." },
+                { year: "2022", title: "Initial Launch", desc: "Released for Construction & IT pilot customers." },
+                { year: "2023", title: "Platform Expansion", desc: "Live pricing feeds + compliance engine added." },
+                { year: "2024", title: "Enterprise Rollout", desc: "Advanced AI + governance workflows + SLAs." },
+                { year: "2025", title: "Unified Planning Engine", desc: "Dual-mode estimation for IT + Construction." },
+              ].map((step, i) => (
+                <motion.div
+                  key={i}
+                  variants={fadeUp}
+                  initial="hidden"
+                  whileInView="visible"
+                  className="mb-12 relative"
+                >
+                  <div className="absolute -left-12 w-6 h-6 bg-indigo-500 rounded-full ring-4 ring-indigo-400/30" />
+                  <div className="text-indigo-300 text-sm">{step.year}</div>
+                  <h3 className="text-xl font-semibold">{step.title}</h3>
+                  <p className="text-slate-300">{step.desc}</p>
+                </motion.div>
+              ))}
             </div>
-          ))}
-        </section>
+          </section>
 
-        {/* ================= CTA ================= */}
-        <section className="grid md:grid-cols-2 gap-10 items-center">
-          <div className="bg-indigo-600/80 p-10 rounded-3xl shadow-xl">
-            <h3 className="text-2xl font-bold">Achievements</h3>
-            <p className="mt-3">
-              200+ startups served, $20M+ raised, 35% faster estimation cycle.
-            </p>
-            <ul className="mt-4 space-y-2 text-sm">
-              <li>• 200+ Projects analyzed</li>
-              <li>• 35% faster planning</li>
-              <li>• 4.9/5 average rating</li>
-            </ul>
-          </div>
+          {/* ---------------------------------------------------------
+              TEAM
+          --------------------------------------------------------- */}
+          <section>
+            <h2 className="text-center text-3xl font-bold mb-10">
+              Leadership
+            </h2>
 
-          <div className="bg-white/80 p-10 rounded-3xl border border-gray-300/50">
-            <h3 className="text-xl font-semibold mb-3 text-gray-900">
-              Get a detailed feasibility report
-            </h3>
-            <p className="text-gray-600 mb-4">
-              Upload your project scope and our team will prepare a complete
-              investor-ready report.
-            </p>
+            <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-8">
+              {[
+                { name: "RISINTERNATIONAL", role: "Founder & CEO", img: "/assets/team1.webp" },
+                { name: "Lead Data Scientist", role: "AI/ML Modeling", img: "/assets/team2.webp" },
+                { name: "Head of Product", role: "Product Strategy", img: "/assets/team3.webp" },
+                { name: "Ops Lead", role: "Enterprise Delivery", img: "/assets/team4.webp" },
+              ].map((m, i) => (
+                <motion.div
+                  key={i}
+                  variants={fadeUp}
+                  initial="hidden"
+                  whileInView="visible"
+                  className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl p-6 text-center shadow-xl hover:scale-[1.03] transition-all"
+                >
+                  <img
+                    src={m.img}
+                    className="w-28 h-28 mx-auto rounded-full border-4 border-white/20 shadow-lg object-cover"
+                  />
+                  <h4 className="mt-4 font-semibold">{m.name}</h4>
+                  <p className="text-slate-300 text-sm">{m.role}</p>
+                </motion.div>
+              ))}
+            </div>
+          </section>
 
-            <div className="flex gap-3">
-              <Button onClick={() => window.location.assign("/contact")}>
-                Request Report
-              </Button>
-              <Button
-                variant="airy"
-                onClick={() => window.location.assign("/estimation")}
+          {/* ---------------------------------------------------------
+              TRUST BADGES
+          --------------------------------------------------------- */}
+          <section className="flex gap-3 flex-wrap justify-center">
+            {["ISO 27001", "GDPR Ready", "AES-256 Encryption", "Enterprise SLA"].map((txt, i) => (
+              <div
+                key={i}
+                className="px-4 py-2 bg-white/10 backdrop-blur-xl border border-white/20 text-slate-200 rounded-full text-sm shadow-md"
               >
-                Try Predicto
-              </Button>
-            </div>
-          </div>
-        </section>
-      </main>
+                {txt}
+              </div>
+            ))}
+          </section>
 
-        <Footer />
+          {/* ---------------------------------------------------------
+              CTA
+          --------------------------------------------------------- */}
+          <section className="grid md:grid-cols-2 gap-12 items-center">
+            {/* Left */}
+            <div className="bg-gradient-to-br from-indigo-600/80 to-purple-700/80 p-10 rounded-3xl shadow-2xl">
+              <h3 className="text-2xl font-bold">Our Achievements</h3>
+              <p className="mt-3 text-slate-200">
+                200+ clients served, 35% faster planning cycles, and $20M+ in
+                investment confidence powered by Predicto insights.
+              </p>
+
+              <ul className="mt-4 space-y-2 text-sm">
+                <li>• AI-powered estimation engine</li>
+                <li>• Enterprise-grade compliance</li>
+                <li>• 99.9% uptime infrastructure</li>
+              </ul>
+            </div>
+
+            {/* Right */}
+            <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-10 shadow-xl">
+              <h3 className="text-xl font-semibold mb-3">Get a Feasibility Report</h3>
+              <p className="text-slate-300 mb-5">
+                Submit your project scope—our team will prepare a detailed,
+                investor-ready feasibility report powered by AI insights.
+              </p>
+
+              <div className="flex gap-4">
+                <Button variant="primary" onClick={() => (window.location = "/contact")}>
+                  Request Report
+                </Button>
+                <Button variant="outline" onClick={() => (window.location = "/estimation")}>
+                  Try Platform
+                </Button>
+              </div>
+            </div>
+          </section>
+        </main>
       </div>
     </Layout>
   );

@@ -1,421 +1,953 @@
 import React, { useState, useEffect } from "react";
 import Layout from "../components/Layout";
-import Footer from "../components/Footer";
 import FeedbackModal from "../components/FeedbackModal";
-import RealtimeActivityFeed from "../components/RealtimeActivityFeed";
-import { motion, useAnimation, useInView } from "framer-motion";
+import { motion, useMotionValue, useTransform } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { DollarSign, Clock, Zap, Target, Users, TrendingUp, Award, Activity } from "lucide-react"; // icons
-import { useRef } from "react";
+import {
+  Brain,
+  TrendingUp,
+  Shield,
+  Users,
+  Award,
+  Target,
+  Clock,
+  DollarSign,
+  CheckCircle,
+  ArrowRight,
+  Star,
+  Globe,
+  BarChart3,
+  Zap
+} from "lucide-react";
 
-// ---------------------------
-// Reusable Button
-// ---------------------------
-const Button = ({ children, className = "", variant = "primary", ...props }) => {
-  const base = "px-7 py-3 rounded-full font-semibold transition transform focus:outline-none focus:ring-2 focus:ring-offset-2";
+// -------------------- Motion Variants --------------------
+const fadeUp = {
+  hidden: { opacity: 0, y: 24 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.6, ease: "easeOut" }
+  }
+};
+
+const fadeIn = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { duration: 0.6, ease: "easeOut" }
+  }
+};
+
+const staggerContainer = {
+  hidden: {},
+  visible: {
+    transition: {
+      staggerChildren: 0.15
+    }
+  }
+};
+
+// -------------------- Reusable Button --------------------
+const Button = ({
+  children,
+  className = "",
+  variant = "primary",
+  size = "md",
+  ...props
+}) => {
+  const base =
+    "inline-flex items-center justify-center font-semibold transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed rounded-full";
+
+  const sizes = {
+    sm: "px-4 py-2 text-sm",
+    md: "px-6 py-3 text-sm",
+    lg: "px-8 py-3.5 text-base"
+  };
+
   const variants = {
     primary:
-      "bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-lg hover:shadow-2xl hover:scale-[1.02] focus:ring-indigo-300",
-    ghost:
-      "bg-transparent text-white border border-white/20 hover:bg-white/5",
+      "bg-blue-600 hover:bg-blue-700 text-white shadow-md hover:shadow-lg focus:ring-blue-500",
     secondary:
-      "bg-white text-indigo-700 hover:bg-white/90 dark:bg-slate-800 dark:text-white",
+      "bg-white hover:bg-slate-50 text-slate-900 border border-slate-200 focus:ring-blue-500",
+    outline:
+      "border border-blue-600 text-blue-600 hover:bg-blue-50 focus:ring-blue-500",
+    ghost: "text-blue-600 hover:bg-blue-50 focus:ring-blue-500"
   };
+
   return (
-    <button className={`${base} ${variants[variant] || variants.primary} ${className}`} {...props}>
+    <button
+      className={`${base} ${sizes[size]} ${variants[variant]} ${className}`}
+      {...props}
+    >
       {children}
     </button>
   );
 };
 
-// ---------------------------
-// Feature Card
-// ---------------------------
-const FeatureCard = ({ icon: Icon, title, description, delay = 0 }) => (
-  <motion.article
-    initial={{ opacity: 0, y: 18 }}
-    whileInView={{ opacity: 1, y: 0 }}
-    viewport={{ once: true }}
-    transition={{ duration: 0.6, delay }}
-    className="p-6 bg-white/70 dark:bg-slate-800/60 backdrop-blur rounded-2xl shadow-lg border border-white/10"
-    aria-label={title}
-  >
-    <div className="w-12 h-12 rounded-lg bg-white/30 dark:bg-white/5 flex items-center justify-center mb-4">
-      <Icon size={22} className="text-indigo-600" />
-    </div>
-    <h3 className="text-lg font-semibold mb-2 dark:text-white">{title}</h3>
-    <p className="text-sm text-gray-700 dark:text-gray-300">{description}</p>
-  </motion.article>
-);
-
-// ---------------------------
-// Animated decorative SVG blobs
-// ---------------------------
-const FloatingBlob = ({ className = "", style = {}, delay = 0, size = 220 }) => (
+// -------------------- Service Card --------------------
+const ServiceCard = ({ icon: Icon, title, description, features }) => (
   <motion.div
-    initial={{ opacity: 0, scale: 0.9 }}
-    animate={{ opacity: 0.18, scale: [0.95, 1.05, 0.98] }}
-    transition={{ duration: 8, repeat: Infinity, delay }}
-    className={`pointer-events-none absolute ${className}`}
-    style={{ width: size, height: size, ...style }}
-    aria-hidden
+    variants={fadeUp}
+    whileHover={{
+      y: -8,
+      scale: 1.02,
+      transition: { type: "spring", stiffness: 260, damping: 20 }
+    }}
+    className="bg-white rounded-2xl shadow-sm border border-slate-100 p-7 hover:shadow-xl hover:border-slate-200 transition-all duration-300"
   >
-    <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
-      <defs>
-        <linearGradient id="g1" x1="0" x2="1" y1="0" y2="1">
-          <stop offset="0%" stopColor="#7c3aed" />
-          <stop offset="100%" stopColor="#4f46e5" />
-        </linearGradient>
-      </defs>
-      <path fill="url(#g1)" d="M43.6,-55.7C55.3,-48.6,64.9,-36.3,68.7,-22.7C72.4,-9,70.3,5.1,64.5,18.6C58.7,32.1,49.1,44.9,36.3,51.9C23.5,59,7.6,60.2,-7.8,63.1C-23.2,66,-46.4,70.6,-56.6,61.7C-66.9,52.9,-64.1,30.6,-64.9,10.5C-65.8,-9.6,-70.3,-27.9,-64.4,-38.9C-58.5,-49.9,-42.2,-53.6,-26.1,-58.3C-10.1,-63,5.6,-68.8,20.5,-66.3C35.4,-63.8,50,-52.9,43.6,-55.7Z" transform="translate(100 100)" />
-    </svg>
+    <div className="w-11 h-11 bg-gradient-to-br from-blue-50 via-indigo-50 to-slate-50 rounded-xl flex items-center justify-center mb-5">
+      <Icon className="w-6 h-6 text-blue-600" />
+    </div>
+    <h3 className="text-lg font-semibold text-slate-900 mb-2.5">{title}</h3>
+    <p className="text-sm text-slate-600 mb-4 leading-relaxed">{description}</p>
+    <ul className="space-y-1.5">
+      {features.map((feature, index) => (
+        <li key={index} className="flex items-start text-sm text-slate-700">
+          <CheckCircle className="w-4 h-4 text-emerald-500 mr-2 mt-0.5 flex-shrink-0" />
+          <span>{feature}</span>
+        </li>
+      ))}
+    </ul>
   </motion.div>
 );
 
-// ---------------------------
-// Animated Counter Component
-// ---------------------------
-const AnimatedCounter = ({ end, duration = 2000, suffix = "" }) => {
+// -------------------- Testimonial Card --------------------
+const TestimonialCard = ({ quote, author, role, company, rating = 5 }) => (
+  <motion.div
+    variants={fadeUp}
+    whileHover={{
+      y: -6,
+      scale: 1.01,
+      transition: { type: "spring", stiffness: 240, damping: 22 }
+    }}
+    className="bg-white rounded-2xl shadow-sm border border-slate-100 p-7 h-full flex flex-col"
+  >
+    <div className="flex mb-3">
+      {[...Array(rating)].map((_, i) => (
+        <Star key={i} className="w-4 h-4 text-amber-400 fill-current" />
+      ))}
+    </div>
+    <blockquote className="text-slate-700 text-sm leading-relaxed mb-5 flex-1">
+      "{quote}"
+    </blockquote>
+    <div>
+      <div className="font-semibold text-slate-900 text-sm">{author}</div>
+      <div className="text-slate-600 text-xs">{role}</div>
+      <div className="text-blue-600 text-xs font-medium mt-0.5">{company}</div>
+    </div>
+  </motion.div>
+);
+
+// -------------------- Statistics Counter --------------------
+const StatCounter = ({ value, label, suffix = "", prefix = "" }) => {
   const [count, setCount] = useState(0);
-  const ref = useRef(null);
-  const isInView = useInView(ref, { once: true });
 
   useEffect(() => {
-    if (isInView) {
-      let startTime = null;
-      const animate = (currentTime) => {
-        if (!startTime) startTime = currentTime;
-        const progress = Math.min((currentTime - startTime) / duration, 1);
-        setCount(Math.floor(progress * end));
-        if (progress < 1) requestAnimationFrame(animate);
-      };
-      requestAnimationFrame(animate);
-    }
-  }, [isInView, end, duration]);
-
-  return <span ref={ref}>{count}{suffix}</span>;
-};
-
-// ---------------------------
-// Live Statistics Section
-// ---------------------------
-const LiveStatsSection = () => {
-  const stats = [
-    { icon: Users, label: "Active Users", value: 15420, suffix: "+", color: "from-blue-500 to-cyan-500" },
-    { icon: TrendingUp, label: "Projects Completed", value: 8920, suffix: "+", color: "from-green-500 to-emerald-500" },
-    { icon: Award, label: "Accuracy Rate", value: 99, suffix: "%", color: "from-purple-500 to-pink-500" },
-    { icon: Activity, label: "Real-time Updates", value: 247, suffix: "/min", color: "from-orange-500 to-red-500" },
-  ];
+    const timer = setTimeout(() => {
+      if (count < value) {
+        setCount(prev => Math.min(prev + Math.ceil(value / 35), value));
+      }
+    }, 30);
+    return () => clearTimeout(timer);
+  }, [count, value]);
 
   return (
-    <section className="py-16 bg-gradient-to-r from-indigo-50/50 to-purple-50/50 dark:from-slate-800/50 dark:to-slate-700/50 rounded-3xl mx-4 md:mx-0">
-      <div className="max-w-6xl mx-auto px-6">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="text-center mb-12"
-        >
-          <h2 className="text-3xl md:text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600 mb-4">
-            Live Platform Statistics
-          </h2>
-          <p className="text-gray-600 dark:text-gray-300 text-lg">
-            Real-time metrics showing our growing community and success
-          </p>
-        </motion.div>
-
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
-          {stats.map((stat, index) => (
-            <motion.div
-              key={stat.label}
-              initial={{ opacity: 0, scale: 0.8 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              viewport={{ once: true }}
-              transition={{ delay: index * 0.1, duration: 0.5 }}
-              whileHover={{ scale: 1.05, y: -5 }}
-              className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-white/20 hover:shadow-2xl transition-all duration-300"
-            >
-              <div className={`w-12 h-12 rounded-xl bg-gradient-to-r ${stat.color} flex items-center justify-center mb-4 mx-auto`}>
-                <stat.icon size={24} className="text-white" />
-              </div>
-              <div className="text-center">
-                <div className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-1">
-                  <AnimatedCounter end={stat.value} suffix={stat.suffix} />
-                </div>
-                <p className="text-sm text-gray-600 dark:text-gray-400 font-medium">{stat.label}</p>
-              </div>
-            </motion.div>
-          ))}
-        </div>
-
-        {/* Progress bars for visual appeal */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true }}
-          transition={{ delay: 0.5 }}
-          className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6"
-        >
-          <div className="bg-white/60 dark:bg-slate-800/60 rounded-xl p-4 backdrop-blur-sm">
-            <div className="flex justify-between items-center mb-2">
-              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">User Satisfaction</span>
-              <span className="text-sm font-bold text-indigo-600">98%</span>
-            </div>
-            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-              <motion.div
-                initial={{ width: 0 }}
-                whileInView={{ width: "98%" }}
-                viewport={{ once: true }}
-                transition={{ duration: 2, delay: 0.7 }}
-                className="bg-gradient-to-r from-indigo-500 to-purple-500 h-2 rounded-full"
-              />
-            </div>
-          </div>
-
-          <div className="bg-white/60 dark:bg-slate-800/60 rounded-xl p-4 backdrop-blur-sm">
-            <div className="flex justify-between items-center mb-2">
-              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">On-Time Delivery</span>
-              <span className="text-sm font-bold text-green-600">95%</span>
-            </div>
-            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-              <motion.div
-                initial={{ width: 0 }}
-                whileInView={{ width: "95%" }}
-                viewport={{ once: true }}
-                transition={{ duration: 2, delay: 0.9 }}
-                className="bg-gradient-to-r from-green-500 to-emerald-500 h-2 rounded-full"
-              />
-            </div>
-          </div>
-
-          <div className="bg-white/60 dark:bg-slate-800/60 rounded-xl p-4 backdrop-blur-sm">
-            <div className="flex justify-between items-center mb-2">
-              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Cost Accuracy</span>
-              <span className="text-sm font-bold text-purple-600">97%</span>
-            </div>
-            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-              <motion.div
-                initial={{ width: 0 }}
-                whileInView={{ width: "97%" }}
-                viewport={{ once: true }}
-                transition={{ duration: 2, delay: 1.1 }}
-                className="bg-gradient-to-r from-purple-500 to-pink-500 h-2 rounded-full"
-              />
-            </div>
-          </div>
-        </motion.div>
+    <div className="text-center lg:text-left">
+      <div className="text-3xl lg:text-4xl font-semibold text-blue-700 mb-1">
+        {prefix}
+        {count}
+        {suffix}
       </div>
-    </section>
+      <div className="text-xs uppercase tracking-wide text-slate-500">
+        {label}
+      </div>
+    </div>
   );
 };
 
-// ---------------------------
-// Main HomePage
-// ---------------------------
+// -------------------- Use Case Card --------------------
+const UseCaseCard = ({ icon: Icon, label, title, text }) => (
+  <motion.div
+    variants={fadeUp}
+    whileHover={{
+      y: -6,
+      scale: 1.02,
+      transition: { type: "spring", stiffness: 260, damping: 20 }
+    }}
+    className="bg-white rounded-2xl border border-slate-100 p-6 shadow-sm hover:shadow-lg transition-all duration-300"
+  >
+    <div className="flex items-center justify-between mb-3">
+      <span className="text-[11px] font-medium text-slate-500 uppercase">
+        {label}
+      </span>
+      <div className="w-9 h-9 rounded-full bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center">
+        <Icon className="w-4 h-4 text-slate-700" />
+      </div>
+    </div>
+    <h3 className="text-sm font-semibold text-slate-900 mb-1.5">{title}</h3>
+    <p className="text-xs text-slate-600 leading-relaxed">{text}</p>
+  </motion.div>
+);
+
+// -------------------- Timeline Step Card --------------------
+const StepCard = ({ icon: Icon, step, title, text }) => (
+  <motion.div
+    variants={fadeUp}
+    className="relative bg-slate-50 rounded-2xl p-6 border border-slate-100"
+  >
+    <div className="flex items-center gap-3 mb-3">
+      <div className="w-8 h-8 rounded-full bg-slate-900 text-[11px] flex items-center justify-center text-slate-100 font-semibold">
+        {step}
+      </div>
+      <div className="w-9 h-9 rounded-full bg-white shadow-sm flex items-center justify-center">
+        <Icon className="w-4 h-4 text-slate-700" />
+      </div>
+    </div>
+    <h3 className="text-sm font-semibold text-slate-900 mb-1.5">{title}</h3>
+    <p className="text-xs text-slate-600 leading-relaxed">{text}</p>
+  </motion.div>
+);
+
 export default function HomePage() {
   const navigate = useNavigate();
   const [isFeedbackModalOpen, setIsFeedbackModalOpen] = useState(false);
-  const [dark, setDark] = useState(false);
 
-  const featureData = [
+  // Parallax motion values for hero
+  const mouseX = useMotionValue(0.5);
+  const mouseY = useMotionValue(0.5);
+
+  const floatXSmall = useTransform(mouseX, [0, 1], [10, -10]);
+  const floatYSmall = useTransform(mouseY, [0, 1], [8, -8]);
+  const floatXLarge = useTransform(mouseX, [0, 1], [-18, 18]);
+  const floatYLarge = useTransform(mouseY, [0, 1], [16, -16]);
+
+  const handleMouseMove = (e) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = (e.clientX - rect.left) / rect.width;
+    const y = (e.clientY - rect.top) / rect.height;
+    mouseX.set(x);
+    mouseY.set(y);
+  };
+
+  const services = [
     {
-      icon: DollarSign,
-      title: "Precision Costing",
-      description: "Deep-learning models predict project costs and reduce budget overruns.",
-      delay: 0,
+      icon: Brain,
+      title: "AI-Powered Estimation",
+      description:
+        "Predict effort, cost and timelines using models trained on historical delivery data and industry benchmarks.",
+      features: [
+        "Context-aware ML models",
+        "Historical velocity calibration",
+        "Domain-specific presets",
+        "Continuous learning loop"
+      ]
+    },
+    {
+      icon: BarChart3,
+      title: "Cost & Effort Analytics",
+      description:
+        "Understand where your budget goes with clear breakdowns by team, phase, workstream and dependency.",
+      features: [
+        "Cost & effort visibility",
+        "Scenario comparison",
+        "Budget variance insights",
+        "Exportable executive reports"
+      ]
     },
     {
       icon: Clock,
-      title: "Optimized Timelines",
-      description: "Data-driven timeline estimates for realistic planning and faster delivery.",
-      delay: 0.08,
+      title: "Timeline & Delivery Health",
+      description:
+        "Model realistic delivery plans with risk-aware timelines and milestone health checks.",
+      features: [
+        "Probability-based forecasting",
+        "Milestone at-risk alerts",
+        "What-if simulations",
+        "Portfolio-level view"
+      ]
     },
     {
-      icon: Zap,
-      title: "Risk Identification",
-      description: "Auto-flag risky dependencies and feasibility issues before execution.",
-      delay: 0.16,
+      icon: Shield,
+      title: "Risk & Governance",
+      description:
+        "Identify delivery risks early and embed governance into every estimation cycle.",
+      features: [
+        "Risk scoring engine",
+        "Control checks & guardrails",
+        "Approval workflows",
+        "Audit-ready history"
+      ]
+    }
+  ];
+
+  const testimonials = [
+    {
+      quote:
+        "Predicto.ai has become a core part of our portfolio governance. Our steering committees now start with one source of truth.",
+      author: "Sarah Johnson",
+      role: "Director of PMO",
+      company: "TechCorp Solutions"
+    },
+    {
+      quote:
+        "We reduced cost overruns on strategic programs by over 35%. The quality of early estimates improved dramatically.",
+      author: "Michael Chen",
+      role: "VP Engineering",
+      company: "InnovateLabs"
+    },
+    {
+      quote:
+        "The platform creates instant alignment between delivery, finance and leadership. It paid for itself within the first quarter.",
+      author: "Emily Rodriguez",
+      role: "Program Manager",
+      company: "Global Systems Inc"
+    }
+  ];
+
+  const stats = [
+    { value: 500, label: "Projects Estimated", suffix: "+" },
+    { value: 98, label: "Forecast Accuracy", suffix: "%" },
+    { value: 50, label: "Enterprise Customers", suffix: "+" },
+    { value: 24, label: "Avg. Hours Saved / Estimate", suffix: "" }
+  ];
+
+  const useCases = [
+    {
+      icon: Users,
+      label: "For PMOs",
+      title: "Standardize estimation across portfolios",
+      text: "Replace spreadsheets with a single, governed approach to sizing and scenario planning across the organization."
+    },
+    {
+      icon: Brain,
+      label: "For Engineering",
+      title: "Defend realistic commitments",
+      text: "Use data-backed forecasts to negotiate scope, protect teams and still hit the outcomes the business cares about."
+    },
+    {
+      icon: DollarSign,
+      label: "For Finance",
+      title: "Fund with confidence",
+      text: "Connect estimates to financial models, track variances and support investment decisions with traceable assumptions."
+    }
+  ];
+
+  const steps = [
+    {
+      icon: Globe,
+      step: "01",
+      title: "Connect & ingest",
+      text: "Bring in historical delivery data or start from our curated industry templates. Connect Jira, Azure DevOps or spreadsheets."
+    },
+    {
+      icon: Brain,
+      step: "02",
+      title: "Model complexity",
+      text: "AI models evaluate scope, constraints and delivery patterns to recommend effort, cost and timelines for each initiative."
+    },
+    {
+      icon: TrendingUp,
+      step: "03",
+      title: "Align & decide",
+      text: "Scenario plan with stakeholders, adjust assumptions live and lock in plans with approvals and governance."
     },
     {
       icon: Target,
-      title: "Strategic Benchmarking",
-      description: "Compare against industry peers using historical and live datasets.",
-      delay: 0.24,
+      step: "04",
+      title: "Monitor & learn",
+      text: "Compare estimates to actuals, feed back learnings and continuously improve your forecasting accuracy."
+    }
+  ];
+
+  const highlights = [
+    {
+      icon: Award,
+      title: "Enterprise-grade",
+      text: "Built for multi-team, multi-region delivery portfolios."
     },
+    {
+      icon: Shield,
+      title: "Secure by design",
+      text: "RBAC, audit logs and encryption in transit & at rest."
+    },
+    {
+      icon: Globe,
+      title: "Global teams",
+      text: "Designed for distributed delivery and remote programs."
+    }
+  ];
+
+  const productGlance = [
+    {
+      title: "Portfolio overview",
+      subtitle: "See your entire change agenda in one place.",
+      tag: "CIO view"
+    },
+    {
+      title: "Estimate vs. actuals",
+      subtitle: "Close the loop and improve over every cycle.",
+      tag: "Delivery health"
+    },
+    {
+      title: "Scenario planning",
+      subtitle: "Model trade-offs between scope, time and cost.",
+      tag: "Exec decisioning"
+    }
   ];
 
   return (
-    <Layout dark={dark} setDark={setDark}>
-      <div className="min-h-screen flex flex-col bg-gradient-to-br from-indigo-950/20 via-indigo-50 to-purple-50 dark:from-slate-900 dark:via-slate-800 text-gray-900 dark:text-gray-100">
-        {/* Floating decorative blobs (positioned absolute inside page) */}
-        <div className="absolute inset-0 -z-10 overflow-hidden">
-          <FloatingBlob className="left-10 top-12" style={{ filter: "blur(36px)" }} delay={0} size={360} />
-          <FloatingBlob className="right-6 top-36" style={{ filter: "blur(40px)", transform: "rotate(30deg)" }} delay={2} size={300} />
-          <FloatingBlob className="left-1/2 -translate-x-1/2 bottom-20" style={{ filter: "blur(44px)" }} delay={4} size={420} />
-          {/* subtle vignette */}
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent to-white/30 dark:to-black/30 pointer-events-none" />
-        </div>
+    <Layout>
+      <div className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-slate-50 text-slate-900">
+        {/* ================= HERO ================= */}
+        <section
+          className="relative overflow-hidden border-b border-slate-100 bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-900 text-white"
+          onMouseMove={handleMouseMove}
+        >
+          {/* Background lights */}
+          <div className="pointer-events-none absolute inset-0">
+            <div className="absolute -top-40 left-1/2 h-80 w-80 -translate-x-1/2 rounded-full bg-blue-500/25 blur-3xl" />
+            <div className="absolute -bottom-40 -right-10 h-80 w-80 rounded-full bg-cyan-500/30 blur-3xl" />
+            <div className="absolute -bottom-32 left-10 h-72 w-72 rounded-full bg-amber-400/10 blur-3xl" />
+          </div>
 
-      <main className="flex-grow pt-24 max-w-7xl mx-auto px-4 md:px-8 lg:px-12">
-        {/* HERO */}
-        <section className="relative z-10">
-          <div className="grid md:grid-cols-2 gap-8 items-center">
-            {/* Hero text + glass card */}
+          {/* Floating shapes */}
+          <motion.div
+            style={{ x: floatXSmall, y: floatYSmall }}
+            className="pointer-events-none absolute top-24 -right-10 w-40 h-40 rounded-3xl bg-gradient-to-br from-sky-500/40 via-cyan-400/30 to-indigo-500/40 blur-2xl opacity-60"
+          />
+          <motion.div
+            style={{ x: floatXLarge, y: floatYLarge }}
+            className="pointer-events-none absolute bottom-10 left-[-40px] w-56 h-56 rounded-full bg-gradient-to-tr from-indigo-500/40 via-purple-500/30 to-sky-400/40 blur-3xl opacity-50"
+          />
+
+          <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-20 lg:py-24">
             <motion.div
-              initial={{ opacity: 0, x: -18 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.7 }}
+              variants={staggerContainer}
+              initial="hidden"
+              animate="visible"
+              className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center"
             >
-              <div className="rounded-3xl p-8 md:p-12 bg-gradient-to-br from-white/70 to-white/40 dark:from-slate-800/60 dark:to-slate-800/40 backdrop-blur border border-white/10 shadow-2xl">
-                <p className="text-sm font-medium uppercase tracking-wide text-indigo-600 mb-3">The Future of Project Planning</p>
-                <h1 className="text-5xl md:text-6xl font-extrabold leading-tight mb-4">
-                  Smarter <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-500 to-purple-600">Project Estimation</span>
-                  <br />
-                  for Confident Decisions
+              {/* Left: Copy */}
+              <motion.div variants={fadeUp}>
+                <div className="inline-flex items-center px-3 py-1 rounded-full bg-white/5 border border-white/10 text-[11px] font-medium mb-5 backdrop-blur-sm">
+                  <Zap className="w-3.5 h-3.5 mr-1.5 text-amber-300" />
+                  AI-driven portfolio estimation for modern delivery teams
+                </div>
+
+                <h1 className="text-3xl sm:text-4xl lg:text-5xl font-semibold leading-tight tracking-tight mb-4">
+                  Make{" "}
+                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-sky-300 via-cyan-200 to-amber-200">
+                    project estimates
+                  </span>{" "}
+                  as credible as{" "}
+                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-200 via-sky-200 to-indigo-200">
+                    your results.
+                  </span>
                 </h1>
-                <p className="text-lg text-gray-700 dark:text-gray-300 max-w-2xl mb-6">
-                  Predicto turns requirements into precise, data-backed cost, timeline, and feasibility analysis — for software and construction projects.
+
+                <p className="text-sm sm:text-base text-slate-200/90 leading-relaxed mb-7 max-w-xl">
+                  Predicto.ai helps PMOs, engineering and finance teams move from
+                  spreadsheets and guesswork to a single, defensible way of sizing,
+                  funding and steering initiatives.
                 </p>
 
-                <div className="flex flex-wrap gap-4">
-                  <Button onClick={() => navigate("/estimation")}>Start Free Estimation</Button>
-                  <Button variant="ghost" onClick={() => navigate("/contact")}>Book a Demo</Button>
+                <div className="flex flex-col sm:flex-row gap-3 mb-6">
+                  <Button
+                    size="lg"
+                    onClick={() => navigate("/estimation")}
+                    className="group"
+                  >
+                    Start a sample estimation
+                    <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                  </Button>
+
+                  <Button
+                    variant="secondary"
+                    size="lg"
+                    onClick={() => navigate("/contact")}
+                    className="bg-transparent border border-white/30 text-white hover:bg-white hover:text-slate-900"
+                  >
+                    Talk to our team
+                  </Button>
                 </div>
 
-                {/* small feature badges */}
-                <div className="mt-6 flex gap-3 flex-wrap">
-                  <div className="px-3 py-1 rounded-full bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 text-sm">AI-driven •</div>
-                  <div className="px-3 py-1 rounded-full bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 text-sm">99% reproducibility •</div>
-                  <div className="px-3 py-1 rounded-full bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 text-sm">Enterprise ready</div>
+                <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center text-[11px] text-slate-200/80 mb-2">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle className="w-4 h-4 text-emerald-300" />
+                    <span>No credit card required</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <CheckCircle className="w-4 h-4 text-emerald-300" />
+                    <span>14-day pilot • Guided onboarding</span>
+                  </div>
                 </div>
-              </div>
+
+                <motion.div
+                  variants={staggerContainer}
+                  className="mt-6 grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs text-slate-200/80"
+                >
+                  {stats.map((stat) => (
+                    <motion.div key={stat.label} variants={fadeUp}>
+                      <StatCounter
+                        value={stat.value}
+                        label={stat.label}
+                        suffix={stat.suffix}
+                      />
+                    </motion.div>
+                  ))}
+                </motion.div>
+              </motion.div>
+
+              {/* Right: Product Glimpse */}
+              <motion.div variants={fadeUp} className="relative">
+                <motion.div
+                  animate={{ y: [-6, 6, -6] }}
+                  transition={{
+                    repeat: Infinity,
+                    repeatType: "mirror",
+                    duration: 10,
+                    ease: "easeInOut"
+                  }}
+                  className="relative"
+                >
+                  <div className="absolute -inset-4 rounded-3xl bg-gradient-to-tr from-sky-400/30 via-indigo-500/20 to-amber-300/30 blur-2xl opacity-80" />
+                  <div className="relative bg-white/95 backdrop-blur rounded-3xl shadow-2xl border border-slate-100/80 p-6 sm:p-7 text-slate-900">
+                    <div className="flex items-center justify-between mb-5">
+                      <div>
+                        <h3 className="text-sm font-semibold text-slate-900">
+                          Portfolio estimation overview
+                        </h3>
+                        <p className="text-xs text-slate-500 mt-0.5">
+                          Q1 strategic initiatives • Updated 2 min ago
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="inline-flex items-center rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-medium text-emerald-700 border border-emerald-100">
+                          <TrendingUp className="w-3 h-3 mr-1" />
+                          98% forecast confidence
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Summary cards */}
+                    <div className="grid grid-cols-3 gap-3 mb-6">
+                      <div className="rounded-xl bg-slate-50 p-3">
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="text-[11px] text-slate-500">Total cost</span>
+                          <DollarSign className="w-3.5 h-3.5 text-slate-400" />
+                        </div>
+                        <div className="text-sm font-semibold text-slate-900">
+                          $3.2M
+                        </div>
+                        <div className="text-[10px] text-emerald-600 mt-0.5">
+                          ↓ 14% vs. last plan
+                        </div>
+                      </div>
+                      <div className="rounded-xl bg-slate-50 p-3">
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="text-[11px] text-slate-500">Avg. duration</span>
+                          <Clock className="w-3.5 h-3.5 text-slate-400" />
+                        </div>
+                        <div className="text-sm font-semibold text-slate-900">
+                          16 weeks
+                        </div>
+                        <div className="text-[10px] text-amber-600 mt-0.5">
+                          3 projects at risk
+                        </div>
+                      </div>
+                      <div className="rounded-xl bg-slate-50 p-3">
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="text-[11px] text-slate-500">Confidence</span>
+                          <Shield className="w-3.5 h-3.5 text-slate-400" />
+                        </div>
+                        <div className="text-sm font-semibold text-slate-900">
+                          High
+                        </div>
+                        <div className="text-[10px] text-sky-600 mt-0.5">
+                          Based on 480+ projects
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Product glance slider (simple) */}
+                    <div className="mb-5">
+                      <div className="flex justify-between items-center mb-2">
+                        <span className="text-[11px] text-slate-500">
+                          Views your leadership will actually use
+                        </span>
+                      </div>
+                      <div className="flex gap-3 overflow-x-auto pb-1 hide-scrollbar">
+                        {productGlance.map((item, idx) => (
+                          <div
+                            key={idx}
+                            className="min-w-[160px] rounded-xl border border-slate-100 bg-white px-3 py-2.5 shadow-xs"
+                          >
+                            <div className="text-[10px] text-slate-500 mb-1">
+                              {item.tag}
+                            </div>
+                            <div className="text-xs font-semibold text-slate-900">
+                              {item.title}
+                            </div>
+                            <div className="text-[11px] text-slate-500 mt-0.5">
+                              {item.subtitle}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Bottom row */}
+                    <div className="flex items-center justify-between">
+                      <div className="flex -space-x-2">
+                        <div className="w-7 h-7 rounded-full bg-sky-100 border border-white flex items-center justify-center text-[10px] font-semibold text-sky-700">
+                          PM
+                        </div>
+                        <div className="w-7 h-7 rounded-full bg-emerald-100 border border-white flex items-center justify-center text-[10px] font-semibold text-emerald-700">
+                          Eng
+                        </div>
+                        <div className="w-7 h-7 rounded-full bg-amber-100 border border-white flex items-center justify-center text-[10px] font-semibold text-amber-700">
+                          Fin
+                        </div>
+                      </div>
+                      <div className="text-[11px] text-slate-500">
+                        Shared with{" "}
+                        <span className="font-medium text-slate-700">
+                          Delivery & Finance
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              </motion.div>
             </motion.div>
+          </div>
+        </section>
 
-            {/* Hero illustration (analytics dashboard) */}
+        {/* ================= TRUST STRIP ================= */}
+        <section className="py-8 bg-white border-b border-slate-100">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
             <motion.div
-              initial={{ opacity: 0, scale: 0.96 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.8 }}
-              className="flex items-center justify-center"
+              variants={fadeIn}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, amount: 0.4 }}
+              className="flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-slate-500"
             >
-              <motion.figure
-                whileHover={{ scale: 1.02, rotateZ: 0.6 }}
-                className="rounded-3xl shadow-2xl overflow-hidden border-4 border-white/60 dark:border-slate-800/60 bg-white"
-                style={{ transformStyle: "preserve-3d" }}
-              >
-                <img
-                  src="https://images.unsplash.com/photo-1547658719-da2b51169166?q=80&w=1400&auto=format&fit=crop&ixlib=rb-4.0.3&s=4f5a5f2d8d4c11cc0f4a9f78bce5a64b"
-                  alt="Analytics dashboard showing charts and predictions"
-                  className="w-full h-96 object-cover"
-                  loading="lazy"
-                />
-              </motion.figure>
+              <p className="font-medium text-slate-600">
+                Trusted by delivery and technology teams across industries
+              </p>
+              <div className="flex flex-wrap gap-4 md:gap-6 text-[11px] uppercase tracking-wide">
+                <span className="text-slate-400">Enterprise IT</span>
+                <span className="text-slate-400">Consulting</span>
+                <span className="text-slate-400">Fintech</span>
+                <span className="text-slate-400">SaaS</span>
+              </div>
             </motion.div>
           </div>
         </section>
 
-        {/* Trusted logos / clients */}
-        <section className="mt-12">
-          <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} transition={{ duration: 0.6 }}>
-            <p className="text-center text-sm uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-4">Trusted by teams across industries</p>
-            <div className="flex items-center justify-center gap-8 flex-wrap">
-              {/* Replace these spans with SVG logos in production */}
-              {["Nova Labs", "Vertex Systems", "Apex Infra", "BlueGrid", "ConstructPro"].map((name, i) => (
-                <motion.span key={name} initial={{ opacity: 0 }} whileInView={{ opacity: 0.7 }} viewport={{ once: true }} transition={{ delay: i * 0.08 }} className="text-sm font-semibold text-gray-700 dark:text-gray-200 bg-white/30 px-4 py-2 rounded-full">
-                  {name}
-                </motion.span>
+        {/* ================= HIGHLIGHTS STRIP ================= */}
+        <section className="py-10 bg-gradient-to-r from-slate-900 via-slate-800 to-indigo-900 text-white">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <motion.div
+              variants={staggerContainer}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, amount: 0.3 }}
+              className="grid md:grid-cols-3 gap-6"
+            >
+              {highlights.map((h, idx) => (
+                <motion.div
+                  key={idx}
+                  variants={fadeUp}
+                  className="flex items-start gap-3 rounded-2xl border border-white/10 bg-white/5 px-4 py-3.5 backdrop-blur-sm"
+                >
+                  <div className="mt-0.5">
+                    <h.icon className="w-4 h-4 text-sky-300" />
+                  </div>
+                  <div>
+                    <div className="text-xs font-semibold mb-0.5">{h.title}</div>
+                    <div className="text-[11px] text-slate-200/80">{h.text}</div>
+                  </div>
+                </motion.div>
               ))}
-            </div>
-          </motion.div>
-        </section>
-
-        {/* Live Statistics Section */}
-        <section className="mt-16">
-          <LiveStatsSection />
-        </section>
-
-        {/* Realtime Activity Feed */}
-        <section className="mt-16">
-          <RealtimeActivityFeed />
-        </section>
-
-        {/* Features grid */}
-        <section className="mt-14">
-          <div className="text-center max-w-3xl mx-auto mb-8">
-            <h2 className="text-3xl md:text-4xl font-bold dark:text-white">Stop Guessing, Start Predicting</h2>
-            <p className="text-gray-600 dark:text-gray-300 mt-2">Core capabilities that make your project planning reliable and repeatable.</p>
-          </div>
-
-          <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
-            {featureData.map((f, idx) => (
-              <FeatureCard key={idx} {...f} delay={f.delay} />
-            ))}
-          </div>
-        </section>
-
-
-
-        {/* Estimation Highlights with analytics image and parallax */}
-        <motion.section initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.7 }} className="grid md:grid-cols-12 gap-8 items-center mt-16">
-          <div className="md:col-span-6 space-y-4">
-            <h3 className="text-2xl font-bold dark:text-white">Data-driven Confidence, Across Industries</h3>
-            <p className="text-gray-700 dark:text-gray-300">Input your scope and receive a detailed estimate, including resource allocation, cost breakdown, and timeline — tailored to your project's region and code requirements.</p>
-
-            <ul className="mt-4 space-y-3 text-gray-700 dark:text-gray-300">
-              <li className="flex items-start">
-                <span className="text-indigo-600 mr-3">✔</span>
-                <span>Detailed resource allocation for development sprints</span>
-              </li>
-              <li className="flex items-start">
-                <span className="text-indigo-600 mr-3">✔</span>
-                <span>Instant feasibility checks with local compliance hints</span>
-              </li>
-              <li className="flex items-start">
-                <span className="text-indigo-600 mr-3">✔</span>
-                <span>Side-by-side vendor comparison and scenario simulation</span>
-              </li>
-            </ul>
-
-            <div className="mt-6 flex gap-4">
-              <Button onClick={() => navigate("/estimation")}>Calculate Your Estimate</Button>
-              <Button variant="ghost" onClick={() => setIsFeedbackModalOpen(true)}>Give Feedback</Button>
-            </div>
-          </div>
-
-          <div className="md:col-span-6">
-            <motion.div whileHover={{ scale: 1.03, rotateX: 0 }} className="rounded-3xl overflow-hidden shadow-2xl border-4 border-white/60 dark:border-slate-800/60">
-              <img
-                src="https://images.unsplash.com/photo-1556157382-97eda2d62296?q=80&w=1400&auto=format&fit=crop&ixlib=rb-4.0.3&s=4f2b2b3298f1c2f8f1e1f6c0e1a3a0a9"
-                alt="Interactive analytics charts and dashboard"
-                className="w-full h-80 object-cover"
-                loading="lazy"
-              />
             </motion.div>
           </div>
-        </motion.section>
-
-        {/* CTA Banner */}
-        <section className="mt-16">
-          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }} className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-3xl p-10 shadow-2xl">
-            <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-              <div>
-                <h3 className="text-2xl font-bold">Ready to transform your planning?</h3>
-                <p className="text-indigo-100 mt-1">Join teams using Predicto to deliver projects on-time and within budget.</p>
-              </div>
-              <div className="flex gap-4">
-                <Button variant="secondary" onClick={() => navigate("/signup")}>Get Started</Button>
-                <Button variant="ghost" onClick={() => setIsFeedbackModalOpen(true)}>Give Feedback</Button>
-              </div>
-            </div>
-          </motion.div>
         </section>
-      </main>
 
-        <Footer />
+        {/* ================= SERVICES ================= */}
+        <section className="py-16 bg-slate-50">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <motion.div
+              variants={fadeUp}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, amount: 0.3 }}
+              className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6 mb-10"
+            >
+              <div>
+                <h2 className="text-2xl sm:text-3xl font-semibold text-slate-900 mb-2">
+                  One platform for estimation, planning and governance
+                </h2>
+                <p className="text-sm sm:text-base text-slate-600 max-w-2xl">
+                  Bring consistency to how projects are sized, funded and tracked, from single
+                  initiatives to complex, multi-region portfolios.
+                </p>
+              </div>
+              <div className="flex items-center gap-3 text-xs text-slate-500">
+                <Award className="w-4 h-4 text-amber-500" />
+                <span>Built for teams running multiple concurrent programs</span>
+              </div>
+            </motion.div>
 
-        <FeedbackModal isOpen={isFeedbackModalOpen} onClose={() => setIsFeedbackModalOpen(false)} />
+            <motion.div
+              variants={staggerContainer}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, amount: 0.2 }}
+              className="grid md:grid-cols-2 lg:grid-cols-4 gap-6"
+            >
+              {services.map((service, index) => (
+                <ServiceCard key={index} {...service} />
+              ))}
+            </motion.div>
+          </div>
+        </section>
+
+        {/* ================= USE CASES ================= */}
+        <section className="py-16 bg-white border-y border-slate-100">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <motion.div
+              variants={fadeUp}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, amount: 0.3 }}
+              className="text-center mb-12"
+            >
+              <h2 className="text-2xl sm:text-3xl font-semibold text-slate-900 mb-2">
+                Built for the teams who carry the numbers
+              </h2>
+              <p className="text-sm sm:text-base text-slate-600 max-w-2xl mx-auto">
+                Predicto.ai sits at the intersection of delivery, technology and finance—giving
+                each function what they need without creating more work.
+              </p>
+            </motion.div>
+
+            <motion.div
+              variants={staggerContainer}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, amount: 0.2 }}
+              className="grid md:grid-cols-3 gap-6"
+            >
+              {useCases.map((uc, idx) => (
+                <UseCaseCard key={idx} {...uc} />
+              ))}
+            </motion.div>
+          </div>
+        </section>
+
+        {/* ================= WORKFLOW / TIMELINE ================= */}
+        <section className="py-16 bg-slate-50">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <motion.div
+              variants={fadeUp}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, amount: 0.3 }}
+              className="text-center mb-12"
+            >
+              <h2 className="text-2xl sm:text-3xl font-semibold text-slate-900 mb-2">
+                How Predicto.ai fits into your delivery flow
+              </h2>
+              <p className="text-sm sm:text-base text-slate-600 max-w-2xl mx-auto">
+                Use Predicto.ai at the moments where decisions matter most—from early shaping
+                and funding cycles through to steering committees.
+              </p>
+            </motion.div>
+
+            <motion.div
+              variants={staggerContainer}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, amount: 0.2 }}
+              className="relative"
+            >
+              {/* Connector line on desktop */}
+              <div className="hidden lg:block absolute top-10 left-0 right-0 h-px bg-gradient-to-r from-transparent via-slate-300 to-transparent" />
+              <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 relative">
+                {steps.map((step, idx) => (
+                  <StepCard key={idx} {...step} />
+                ))}
+              </div>
+            </motion.div>
+          </div>
+        </section>
+
+        {/* ================= TESTIMONIALS ================= */}
+        <section className="py-16 bg-white">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <motion.div
+              variants={fadeUp}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, amount: 0.3 }}
+              className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6 mb-10"
+            >
+              <div>
+                <h2 className="text-2xl sm:text-3xl font-semibold text-slate-900 mb-2">
+                  Teams use Predicto.ai to build trust in their numbers
+                </h2>
+                <p className="text-sm sm:text-base text-slate-600 max-w-2xl">
+                  From CIO dashboards to board packs, your estimates become a single source of
+                  truth everyone can stand behind.
+                </p>
+              </div>
+              <div className="flex items-center gap-2 text-xs text-slate-500">
+                <Users className="w-4 h-4" />
+                <span>Used across PMOs, engineering and finance</span>
+              </div>
+            </motion.div>
+
+            <motion.div
+              variants={staggerContainer}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, amount: 0.2 }}
+              className="grid md:grid-cols-3 gap-6"
+            >
+              {testimonials.map((testimonial, index) => (
+                <TestimonialCard key={index} {...testimonial} />
+              ))}
+            </motion.div>
+          </div>
+        </section>
+
+        {/* ================= FAQ + CTA ================= */}
+        <section className="py-16 bg-slate-50">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 grid lg:grid-cols-2 gap-10 lg:gap-12 items-start">
+            {/* FAQ */}
+            <motion.div
+              variants={staggerContainer}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, amount: 0.3 }}
+            >
+              <motion.h2
+                variants={fadeUp}
+                className="text-2xl sm:text-3xl font-semibold text-slate-900 mb-3"
+              >
+                Answers to common questions
+              </motion.h2>
+              <motion.p
+                variants={fadeUp}
+                className="text-sm sm:text-base text-slate-600 mb-6"
+              >
+                Still evaluating if Predicto.ai is a fit? These are the topics most teams ask
+                about during discovery.
+              </motion.p>
+
+              <div className="space-y-3">
+                {[
+                  {
+                    q: "Who is Predicto.ai built for?",
+                    a: "Predicto.ai is designed for delivery leaders, PMOs, engineering managers and finance partners who need consistent, defensible project estimates."
+                  },
+                  {
+                    q: "Can we use Predicto.ai without historical data?",
+                    a: "Yes. You can start with our pre-configured industry baselines and gradually enrich predictions as your own delivery data becomes available."
+                  },
+                  {
+                    q: "How long does implementation take?",
+                    a: "Most teams are live within 1–2 weeks. Integrations with tools like Jira or Azure DevOps can be added incrementally."
+                  },
+                  {
+                    q: "Is our data secure?",
+                    a: "Predicto.ai follows enterprise-grade security practices, including encryption in transit and at rest, role-based access and audit logging."
+                  }
+                ].map((item, idx) => (
+                  <motion.div
+                    key={idx}
+                    variants={fadeUp}
+                    className="border border-slate-200 rounded-xl p-4 bg-white"
+                  >
+                    <div className="flex items-start justify-between gap-4">
+                      <h3 className="text-sm font-semibold text-slate-900">
+                        {item.q}
+                      </h3>
+                    </div>
+                    <p className="text-xs text-slate-600 mt-1.5 leading-relaxed">
+                      {item.a}
+                    </p>
+                  </motion.div>
+                ))}
+              </div>
+            </motion.div>
+
+            {/* CTA Card */}
+            <motion.div
+              variants={fadeUp}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, amount: 0.3 }}
+              className="relative bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-900 text-white rounded-3xl p-7 lg:p-8 overflow-hidden"
+            >
+              <div className="absolute inset-0 opacity-40 pointer-events-none">
+                <div className="absolute -top-24 right-0 w-64 h-64 bg-sky-500/40 blur-3xl" />
+                <div className="absolute bottom-0 -left-10 w-64 h-64 bg-amber-400/40 blur-3xl" />
+              </div>
+
+              <div className="relative">
+                <h2 className="text-2xl sm:text-3xl font-semibold mb-2">
+                  Ready to see your next portfolio, before you commit?
+                </h2>
+                <p className="text-sm sm:text-base text-slate-200 mb-6 max-w-md">
+                  We’ll walk you through a live estimation using your own initiatives, and
+                  leave you with an exportable view you can share internally with leadership.
+                </p>
+
+                <div className="flex flex-col sm:flex-row gap-3 mb-4">
+                  <Button
+                    size="lg"
+                    variant="secondary"
+                    onClick={() => navigate("/signup")}
+                    className="bg-white text-slate-900 hover:bg-slate-100"
+                  >
+                    Start a 14-day pilot
+                    <ArrowRight className="w-4 h-4 ml-2" />
+                  </Button>
+                  <Button
+                    size="lg"
+                    variant="outline"
+                    onClick={() => navigate("/contact")}
+                    className="border-white text-white hover:bg-white hover:text-slate-900"
+                  >
+                    Book discovery call
+                  </Button>
+                </div>
+
+                <p className="text-[11px] text-slate-300">
+                  No procurement needed for pilots • SOC-ready infrastructure • EU & US data
+                  hosting options
+                </p>
+              </div>
+            </motion.div>
+          </div>
+        </section>
+
+        {/* Floating Feedback Button */}
+        <button
+          onClick={() => setIsFeedbackModalOpen(true)}
+          className="fixed bottom-6 right-6 z-30 rounded-full bg-slate-900 text-white text-xs px-4 py-2.5 shadow-lg hover:bg-slate-800 flex items-center gap-2"
+        >
+          <Star className="w-4 h-4" />
+          Share feedback
+        </button>
+
+        <FeedbackModal
+          isOpen={isFeedbackModalOpen}
+          onClose={() => setIsFeedbackModalOpen(false)}
+        />
       </div>
     </Layout>
   );

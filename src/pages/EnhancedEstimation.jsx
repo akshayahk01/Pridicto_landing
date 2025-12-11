@@ -1,327 +1,398 @@
-import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import Layout from '../components/Layout';
-import { 
-  FiDollarSign, 
-  FiClock, 
-  FiUsers, 
-  FiBarChart, 
+import React, { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import Layout from "../components/Layout";
+import {
+  FiDollarSign,
+  FiClock,
+  FiUsers,
+  FiBarChart,
   FiDownload,
   FiSave,
   FiShare2,
   FiSettings,
   FiAlertCircle,
-  FiCheckCircle
-} from 'react-icons/fi';
+  FiCheckCircle,
+} from "react-icons/fi";
 
 export default function EnhancedEstimation() {
-  const [dark, setDark] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [estimation, setEstimation] = useState(null);
+
   const [formData, setFormData] = useState({
-    projectType: '',
-    complexity: '',
-    duration: '',
-    teamSize: '',
-    features: [],
-    requirements: '',
-    budget: '',
-    timeline: ''
+    projectType: "",
+    complexity: "",
+    budget: "",
   });
 
   const projectTypes = [
-    { value: 'web-app', label: 'Web Application', icon: '🌐' },
-    { value: 'mobile-app', label: 'Mobile Application', icon: '📱' },
-    { value: 'software', label: 'Desktop Software', icon: '💻' },
-    { value: 'construction', label: 'Construction Project', icon: '🏗️' },
-    { value: 'consulting', label: 'Consulting Project', icon: '📊' }
+    { value: "web-app", label: "Web Application", icon: "🌐" },
+    { value: "mobile-app", label: "Mobile App", icon: "📱" },
+    { value: "software", label: "Software", icon: "💻" },
+    { value: "construction", label: "Construction", icon: "🏗️" },
+    { value: "consulting", label: "Consulting", icon: "📊" },
   ];
 
   const complexityLevels = [
-    { value: 'simple', label: 'Simple', description: 'Basic features, standard requirements' },
-    { value: 'moderate', label: 'Moderate', description: 'Some custom features, medium complexity' },
-    { value: 'complex', label: 'Complex', description: 'Advanced features, high complexity' },
-    { value: 'enterprise', label: 'Enterprise', description: 'Large-scale, mission-critical system' }
+    {
+      value: "simple",
+      label: "Simple",
+      description: "Basic features, low complexity",
+    },
+    {
+      value: "moderate",
+      label: "Moderate",
+      description: "Some custom features, medium complexity",
+    },
+    {
+      value: "complex",
+      label: "Complex",
+      description: "Large features, high complexity",
+    },
+    {
+      value: "enterprise",
+      label: "Enterprise",
+      description: "Mission-critical, multiple integrations",
+    },
   ];
 
   const generateEstimation = async () => {
     setIsLoading(true);
-    
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 3000));
-    
+    await new Promise((resolve) => setTimeout(resolve, 2500));
+
     const mockEstimation = {
       cost: {
-        total: 75000,
+        total: 85000,
         breakdown: [
-          { category: 'Development', amount: 45000, percentage: 60 },
-          { category: 'Design', amount: 15000, percentage: 20 },
-          { category: 'Testing', amount: 9000, percentage: 12 },
-          { category: 'Project Management', amount: 6000, percentage: 8 }
-        ]
+          { category: "Development", amount: 48000, percentage: 60 },
+          { category: "Design", amount: 16000, percentage: 18 },
+          { category: "Testing", amount: 14000, percentage: 12 },
+          { category: "Management", amount: 7000, percentage: 10 },
+        ],
       },
       timeline: {
-        totalWeeks: 16,
+        totalWeeks: 18,
         phases: [
-          { phase: 'Planning & Analysis', weeks: 2 },
-          { phase: 'Design', weeks: 3 },
-          { phase: 'Development', weeks: 8 },
-          { phase: 'Testing', weeks: 2 },
-          { phase: 'Deployment', weeks: 1 }
-        ]
+          { phase: "Planning 📘", weeks: 2 },
+          { phase: "Design 🎨", weeks: 3 },
+          { phase: "Development 💻", weeks: 9 },
+          { phase: "Testing 🧪", weeks: 3 },
+          { phase: "Launch 🚀", weeks: 1 },
+        ],
       },
       team: {
-        totalMembers: 5,
+        totalMembers: 6,
         roles: [
-          { role: 'Project Manager', count: 1 },
-          { role: 'Lead Developer', count: 1 },
-          { role: 'Frontend Developer', count: 1 },
-          { role: 'Backend Developer', count: 1 },
-          { role: 'QA Engineer', count: 1 }
-        ]
+          { role: "Project Manager", count: 1 },
+          { role: "Senior Developer", count: 1 },
+          { role: "Frontend Developer", count: 1 },
+          { role: "Backend Developer", count: 1 },
+          { role: "UI/UX Designer", count: 1 },
+          { role: "QA Engineer", count: 1 },
+        ],
       },
       risk: {
         score: 3.2,
-        level: 'Low',
-        factors: [
-          { risk: 'Scope Creep', probability: 'Medium', impact: 'High' },
-          { risk: 'Technical Challenges', probability: 'Low', impact: 'Medium' },
-          { risk: 'Resource Availability', probability: 'Low', impact: 'Medium' }
-        ]
+        level: "Moderate",
+        color: "#facc15",
+        factors: ["Scope changes", "Third-party dependencies", "Team workload"],
       },
-      confidence: 85
+      confidence: 87,
     };
-    
+
     setEstimation(mockEstimation);
     setIsLoading(false);
   };
 
   const handleInputChange = (field, value) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [field]: value
+      [field]: value,
     }));
   };
 
-  const exportPDF = () => {
-    // Simulate PDF export
-    alert('PDF export functionality would be implemented here');
-  };
-
-  const saveEstimation = () => {
-    // Simulate saving
-    localStorage.setItem('latest_estimation', JSON.stringify(estimation));
-    alert('Estimation saved successfully!');
-  };
+  const exportPDF = () => alert("PDF export will be implemented here");
+  const saveEstimation = () => alert("Estimation saved successfully!");
 
   return (
-    <Layout dark={false} setDark={() => {}}>
-      <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 from-slate-900 via-slate-800 to-slate-900">
-        <div className="pt-28 pb-16 max-w-7xl mx-auto px-4">
-          {/* Header */}
+    <Layout>
+      <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 text-white">
+        <div className="pt-28 pb-20 max-w-7xl mx-auto px-4">
+
+          {/* HEADER */}
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-center mb-12"
+            className="text-center mb-16"
           >
-            <h1 className="text-4xl md:text-5xl font-bold text-gray-900 text-white mb-4">
-              Advanced Project <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-500 to-purple-600">Estimation</span>
-            </h1>
-            <p className="text-xl text-gray-600 text-gray-300 max-w-3xl mx-auto">
-              Get comprehensive project estimates with AI-powered analysis, risk assessment, and detailed breakdown
+            <motion.h1
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="text-5xl font-bold mb-4"
+            >
+              Project{" "}
+              <span className="bg-gradient-to-r from-indigo-400 to-purple-500 text-transparent bg-clip-text">
+                Estimation Engine
+              </span>
+            </motion.h1>
+
+            <p className="text-slate-300 text-lg max-w-3xl mx-auto">
+              AI-powered cost, timeline, risk, and team estimations—crafted
+              precisely for your project.
             </p>
           </motion.div>
 
           <div className="grid lg:grid-cols-2 gap-12">
-            {/* Form Section */}
+            {/* FORM */}
             <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              className="bg-white/80 bg-slate-800/80 backdrop-blur rounded-2xl p-8 shadow-lg border border-gray-200/50 border-slate-700/50"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="bg-white/5 border border-white/10 backdrop-blur-xl rounded-3xl p-8 shadow-2xl"
             >
-              <h2 className="text-2xl font-bold text-gray-900 text-white mb-6 flex items-center gap-3">
-                <FiSettings className="w-6 h-6 text-indigo-600" />
+              <h2 className="text-2xl font-semibold mb-6 flex items-center gap-3">
+                <FiSettings className="text-indigo-400" />
                 Project Details
               </h2>
 
               <div className="space-y-6">
+
                 {/* Project Type */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 text-gray-300 mb-3">
+                  <label className="text-sm text-slate-300 mb-3 block">
                     Project Type
                   </label>
                   <div className="grid grid-cols-1 gap-3">
-                    {projectTypes.map(type => (
-                      <button
+                    {projectTypes.map((type) => (
+                      <motion.button
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.97 }}
                         key={type.value}
-                        onClick={() => handleInputChange('projectType', type.value)}
-                        className={`p-4 rounded-lg border text-left transition-all duration-200 ${
+                        onClick={() => handleInputChange("projectType", type.value)}
+                        className={`p-4 rounded-xl border transition-all text-left ${
                           formData.projectType === type.value
-                            ? 'border-indigo-500 bg-indigo-50 bg-indigo-900/20 text-indigo-700 text-indigo-300'
-                            : 'border-gray-300 border-gray-600 hover:border-gray-400 hover:border-gray-500'
+                            ? "bg-indigo-600/20 border-indigo-500 shadow-lg"
+                            : "bg-white/5 border-white/10 hover:border-indigo-400"
                         }`}
                       >
                         <div className="flex items-center gap-3">
-                          <span className="text-xl">{type.icon}</span>
-                          <span className="font-medium">{type.label}</span>
+                          <span className="text-2xl">{type.icon}</span>
+                          <span className="font-medium text-slate-200">
+                            {type.label}
+                          </span>
                         </div>
-                      </button>
+                      </motion.button>
                     ))}
                   </div>
                 </div>
 
-                {/* Complexity Level */}
+                {/* Complexity */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 text-gray-300 mb-3">
+                  <label className="text-sm text-slate-300 mb-3 block">
                     Complexity Level
                   </label>
-                  <div className="space-y-2">
-                    {complexityLevels.map(level => (
-                      <button
+
+                  <div className="space-y-3">
+                    {complexityLevels.map((level) => (
+                      <motion.button
                         key={level.value}
-                        onClick={() => handleInputChange('complexity', level.value)}
-                        className={`w-full p-4 rounded-lg border text-left transition-all duration-200 ${
+                        whileHover={{ scale: 1.02 }}
+                        onClick={() => handleInputChange("complexity", level.value)}
+                        className={`w-full p-4 rounded-xl border transition-all text-left ${
                           formData.complexity === level.value
-                            ? 'border-indigo-500 bg-indigo-50 bg-indigo-900/20'
-                            : 'border-gray-300 border-gray-600 hover:border-gray-400'
+                            ? "bg-purple-600/20 border-purple-500 shadow-lg"
+                            : "bg-white/5 border-white/10 hover:border-purple-400"
                         }`}
                       >
-                        <div className="font-medium text-gray-900 text-white">{level.label}</div>
-                        <div className="text-sm text-gray-600 text-gray-400">{level.description}</div>
-                      </button>
+                        <div className="font-semibold">{level.label}</div>
+                        <div className="text-sm text-slate-400">
+                          {level.description}
+                        </div>
+                      </motion.button>
                     ))}
                   </div>
                 </div>
 
-                {/* Budget Range */}
+                {/* Budget */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 text-gray-300 mb-3">
+                  <label className="text-sm text-slate-300 mb-2 block">
                     Budget Range
                   </label>
                   <select
+                    className="w-full p-3 rounded-xl bg-white/10 border border-white/10"
                     value={formData.budget}
-                    onChange={(e) => handleInputChange('budget', e.target.value)}
-                    className="w-full p-3 border border-gray-300 border-gray-600 rounded-lg bg-white bg-slate-700 text-gray-900 text-white"
+                    onChange={(e) =>
+                      handleInputChange("budget", e.target.value)
+                    }
                   >
-                    <option value="">Select budget range</option>
+                    <option value="">Select a range</option>
                     <option value="10k-25k">$10K - $25K</option>
                     <option value="25k-50k">$25K - $50K</option>
                     <option value="50k-100k">$50K - $100K</option>
-                    <option value="100k-250k">$100K - $250K</option>
-                    <option value="250k+">$250K+</option>
                   </select>
                 </div>
 
-                {/* Generate Button */}
-                <button
+                {/* Submit Button */}
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
                   onClick={generateEstimation}
-                  disabled={isLoading || !formData.projectType || !formData.complexity}
-                  className="w-full py-4 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-lg font-semibold hover:shadow-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                  disabled={!formData.projectType || !formData.complexity}
+                  className="w-full py-4 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-xl font-semibold 
+                             disabled:opacity-40 disabled:cursor-not-allowed shadow-lg"
                 >
-                  {isLoading ? 'Generating Estimation...' : 'Generate Estimation'}
-                </button>
+                  {isLoading ? "Generating..." : "Generate Estimation"}
+                </motion.button>
               </div>
             </motion.div>
 
-            {/* Results Section */}
+            {/* RESULTS */}
             <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              className="bg-white/80 bg-slate-800/80 backdrop-blur rounded-2xl p-8 shadow-lg border border-gray-200/50 border-slate-700/50"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="bg-white/5 border border-white/10 backdrop-blur-xl rounded-3xl p-8 shadow-2xl"
             >
-              <h2 className="text-2xl font-bold text-gray-900 text-white mb-6 flex items-center gap-3">
-                <FiBarChart className="w-6 h-6 text-indigo-600" />
+              <h2 className="text-2xl font-semibold mb-6 flex items-center gap-3">
+                <FiBarChart className="text-indigo-400" />
                 Estimation Results
               </h2>
 
-              {isLoading ? (
-                <div className="flex items-center justify-center h-64">
-                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+              {/* Empty State */}
+              {!estimation && !isLoading && (
+                <div className="h-60 flex flex-col justify-center items-center text-slate-400">
+                  <FiBarChart className="text-5xl opacity-50 mb-4" />
+                  <p>Fill out details to generate estimation</p>
                 </div>
-              ) : estimation ? (
-                <div className="space-y-6">
-                  {/* Cost Summary */}
-                  <div className="p-6 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-xl text-white">
-                    <div className="flex items-center gap-3 mb-2">
-                      <FiDollarSign className="w-6 h-6" />
-                      <span className="text-lg font-semibold">Total Estimated Cost</span>
-                    </div>
-                    <div className="text-3xl font-bold">${estimation.cost.total.toLocaleString()}</div>
-                    <div className="text-indigo-100 mt-2">Confidence: {estimation.confidence}%</div>
-                  </div>
+              )}
 
-                  {/* Timeline */}
-                  <div className="p-4 border border-gray-200 border-gray-600 rounded-lg">
-                    <div className="flex items-center gap-3 mb-3">
-                      <FiClock className="w-5 h-5 text-indigo-600" />
-                      <span className="font-semibold text-gray-900 text-white">Timeline: {estimation.timeline.totalWeeks} weeks</span>
-                    </div>
-                    <div className="space-y-2">
-                      {estimation.timeline.phases.map((phase, index) => (
-                        <div key={index} className="flex justify-between text-sm">
-                          <span className="text-gray-600 text-gray-400">{phase.phase}</span>
-                          <span className="text-gray-900 text-white">{phase.weeks}w</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
+              {/* Loading Spinner */}
+              {isLoading && (
+                <div className="h-60 flex justify-center items-center">
+                  <motion.div
+                    animate={{ rotate: 360 }}
+                    transition={{ repeat: Infinity, duration: 1 }}
+                    className="w-12 h-12 border-4 border-indigo-500 border-t-transparent rounded-full"
+                  />
+                </div>
+              )}
 
-                  {/* Team Size */}
-                  <div className="p-4 border border-gray-200 border-gray-600 rounded-lg">
-                    <div className="flex items-center gap-3 mb-3">
-                      <FiUsers className="w-5 h-5 text-indigo-600" />
-                      <span className="font-semibold text-gray-900 text-white">Team Requirements</span>
-                    </div>
-                    <div className="text-2xl font-bold text-gray-900 text-white mb-2">{estimation.team.totalMembers} members</div>
-                    <div className="space-y-1">
-                      {estimation.team.roles.map((role, index) => (
-                        <div key={index} className="flex justify-between text-sm">
-                          <span className="text-gray-600 text-gray-400">{role.role}</span>
-                          <span className="text-gray-900 text-white">{role.count}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Risk Assessment */}
-                  <div className="p-4 border border-gray-200 border-gray-600 rounded-lg">
-                    <div className="flex items-center gap-3 mb-3">
-                      <FiAlertCircle className="w-5 h-5 text-yellow-500" />
-                      <span className="font-semibold text-gray-900 text-white">Risk Level: {estimation.risk.level}</span>
-                    </div>
-                    <div className="text-sm text-gray-600 text-gray-400">
-                      Risk Score: {estimation.risk.score}/5
-                    </div>
-                  </div>
-
-                  {/* Action Buttons */}
-                  <div className="flex gap-3 pt-4">
-                    <button
-                      onClick={exportPDF}
-                      className="flex-1 flex items-center justify-center gap-2 py-3 border border-gray-300 border-gray-600 text-gray-700 text-gray-300 rounded-lg hover:bg-gray-50 hover:bg-slate-700 transition-colors"
+              {/* RESULTS UI */}
+              {estimation && !isLoading && (
+                <AnimatePresence>
+                  <motion.div
+                    initial={{ opacity: 0, y: 30 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0 }}
+                    className="space-y-8"
+                  >
+                    {/* COST CARD */}
+                    <motion.div
+                      initial={{ scale: 0.9 }}
+                      animate={{ scale: 1 }}
+                      className="p-6 rounded-2xl bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-xl"
                     >
-                      <FiDownload className="w-4 h-4" />
-                      Export PDF
-                    </button>
-                    <button
-                      onClick={saveEstimation}
-                      className="flex-1 flex items-center justify-center gap-2 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
-                    >
-                      <FiSave className="w-4 h-4" />
-                      Save
-                    </button>
-                    <button className="flex items-center justify-center gap-2 py-3 border border-gray-300 border-gray-600 text-gray-700 text-gray-300 rounded-lg hover:bg-gray-50 hover:bg-slate-700 transition-colors">
-                      <FiShare2 className="w-4 h-4" />
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                <div className="flex items-center justify-center h-64 text-gray-500 text-gray-400">
-                  <div className="text-center">
-                    <FiBarChart className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                    <p>Fill out the form to generate your project estimation</p>
-                  </div>
-                </div>
+                      <div className="flex items-center gap-3">
+                        <FiDollarSign className="text-3xl" />
+                        <div>
+                          <p className="text-lg font-semibold">Estimated Cost</p>
+                          <p className="text-4xl font-bold">
+                            ${estimation.cost.total.toLocaleString()}
+                          </p>
+                        </div>
+                      </div>
+                      <p className="text-indigo-200 mt-2">
+                        Confidence Score: {estimation.confidence}%
+                      </p>
+                    </motion.div>
+
+                    {/* TIMELINE */}
+                    <div className="p-5 rounded-2xl bg-white/10 border border-white/10">
+                      <div className="flex items-center gap-2 mb-3">
+                        <FiClock className="text-indigo-400" />
+                        <span className="font-semibold">
+                          Total Timeline: {estimation.timeline.totalWeeks} Weeks
+                        </span>
+                      </div>
+
+                      <div className="space-y-3">
+                        {estimation.timeline.phases.map((p, i) => (
+                          <motion.div
+                            key={i}
+                            initial={{ opacity: 0, x: -20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: i * 0.05 }}
+                            className="flex justify-between"
+                          >
+                            <span className="text-slate-300">{p.phase}</span>
+                            <span>{p.weeks}w</span>
+                          </motion.div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* TEAM */}
+                    <div className="p-5 rounded-2xl bg-white/10 border border-white/10">
+                      <div className="flex items-center gap-2 mb-2">
+                        <FiUsers className="text-indigo-400" />
+                        <span className="font-semibold">Team Structure</span>
+                      </div>
+
+                      <p className="text-3xl font-bold mb-3">
+                        {estimation.team.totalMembers} Members
+                      </p>
+
+                      <div className="space-y-2">
+                        {estimation.team.roles.map((role, i) => (
+                          <div key={i} className="flex justify-between text-sm">
+                            <span className="text-slate-300">{role.role}</span>
+                            <span>{role.count}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* RISK */}
+                    <div className="p-5 rounded-2xl bg-white/10 border border-white/10">
+                      <div className="flex items-center gap-2 mb-2">
+                        <FiAlertCircle className="text-yellow-400" />
+                        <span className="font-semibold">
+                          Risk Level: {estimation.risk.level}
+                        </span>
+                      </div>
+
+                      <div className="w-full h-3 rounded-full bg-white/20 overflow-hidden">
+                        <motion.div
+                          initial={{ width: 0 }}
+                          animate={{ width: `${estimation.risk.score * 20}%` }}
+                          className="h-full bg-yellow-400"
+                        />
+                      </div>
+
+                      <ul className="mt-3 text-sm text-slate-300 space-y-1">
+                        {estimation.risk.factors.map((r, i) => (
+                          <li key={i}>• {r}</li>
+                        ))}
+                      </ul>
+                    </div>
+
+                    {/* ACTION BUTTONS */}
+                    <div className="flex gap-4">
+                      <button
+                        onClick={exportPDF}
+                        className="flex-1 py-3 rounded-xl bg-white/10 border border-white/20 hover:bg-white/20 transition"
+                      >
+                        <FiDownload className="inline-block mr-2" /> Export PDF
+                      </button>
+                      <button
+                        onClick={saveEstimation}
+                        className="flex-1 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 transition font-semibold"
+                      >
+                        <FiSave className="inline-block mr-2" /> Save
+                      </button>
+
+                      <button className="p-3 rounded-xl bg-white/10 border border-white/20 hover:bg-white/20 transition">
+                        <FiShare2 />
+                      </button>
+                    </div>
+                  </motion.div>
+                </AnimatePresence>
               )}
             </motion.div>
           </div>

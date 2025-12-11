@@ -1,101 +1,191 @@
-import React, { useEffect, useState } from 'react';
-import { FiMoon, FiSun, FiSearch, FiMenu, FiX } from 'react-icons/fi';
-import { Link } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import SearchBar from './SearchBar';
+import React, { useEffect, useState } from "react";
+import {
+  FiMoon,
+  FiSun,
+  FiSearch,
+  FiMenu,
+  FiX,
+} from "react-icons/fi";
+import { Link } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+import SearchBar from "./SearchBar";
+import { motion } from "framer-motion";
 
 export default function Navbar({ dark: propDark, setDark: propSetDark }) {
   const { user, logout } = useAuth();
+
   const [localDark, setLocalDark] = useState(propDark ?? false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
+  const dark = propDark ?? localDark;
+  const setDark = typeof propSetDark === "function" ? propSetDark : setLocalDark;
+
   useEffect(() => {
     try {
-      const saved = localStorage.getItem('predicto_theme');
-      if (saved) {
-        const isDark = saved === 'dark';
-        if (typeof propSetDark === 'function') {
-          propSetDark(isDark);
-        } else {
-          setLocalDark(isDark);
-        }
-      }
-    } catch (e) {
-      // ignore localStorage errors in restricted environments
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+      const saved = localStorage.getItem("predicto_theme");
+      if (saved) setDark(saved === "dark");
+    } catch {}
   }, []);
-
-  const dark = propDark ?? localDark;
-  const setDark = typeof propSetDark === 'function' ? propSetDark : setLocalDark;
 
   const toggleTheme = () => {
     const newDark = !dark;
-    try {
-      localStorage.setItem('predicto_theme', newDark ? 'dark' : 'light');
-    } catch (e) {
-      /* ignore */
-    }
     setDark(newDark);
+    try {
+      localStorage.setItem("predicto_theme", newDark ? "dark" : "light");
+    } catch {}
   };
 
-  const closeMobileMenu = () => setIsMobileMenuOpen(false);
+  const closeMobile = () => setIsMobileMenuOpen(false);
+
+  const navItems = [
+    ["Home", "/"],
+    ["About", "/about"],
+    ["Services", "/services"],
+    ["Portfolio", "/portfolio"],
+    ["Insights", "/insights"],
+    ["Suggestions", "/suggestions"],
+    ["FAQ", "/faq"],
+    ["Contact", "/contact"],
+  ];
 
   return (
     <>
-      <nav className="fixed top-0 left-0 right-0 z-40 backdrop-blur-md bg-white/80 dark:bg-slate-800/80 border-b border-gray-200 dark:border-slate-700 shadow-sm">
-        <div className="max-w-7xl mx-auto flex justify-between items-center px-6 py-4">
-          {/* Logo */}
-          <Link to="/" className="flex items-center gap-3" onClick={closeMobileMenu}>
-            <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-indigo-500 to-teal-400 flex items-center justify-center text-white font-bold shadow">
+      {/* SUPER ULTRA PREMIUM NAVBAR */}
+      <motion.nav
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, ease: "easeOut" }}
+        className="
+          fixed top-0 left-0 right-0 z-50
+          backdrop-blur-2xl
+          bg-white/60 dark:bg-slate-900/60
+          border-b border-white/20 dark:border-slate-700/40
+          shadow-[0_8px_24px_-4px_rgba(0,0,0,0.08)]
+        "
+      >
+        <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+
+          {/* LOGO SECTION */}
+          <Link
+            to="/"
+            onClick={closeMobile}
+            className="flex items-center gap-3 group"
+          >
+            <motion.div
+              whileHover={{ rotate: 6, scale: 1.07 }}
+              transition={{ type: "spring", stiffness: 180 }}
+              className="
+                w-10 h-10 rounded-xl
+                bg-gradient-to-br from-blue-600 via-indigo-500 to-cyan-400
+                flex items-center justify-center text-white font-extrabold text-lg
+                shadow-lg shadow-blue-500/30
+              "
+            >
               P
-            </div>
+            </motion.div>
+
             <div>
-              <h1 className="font-semibold text-lg">Predicto</h1>
-              <p className="text-xs text-gray-500 dark:text-gray-300">Smart AI Estimator</p>
+              <motion.h1
+                whileHover={{ x: 2 }}
+                className="text-lg font-bold tracking-tight bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent"
+              >
+                Predicto
+              </motion.h1>
+              <p className="text-xs text-gray-600 dark:text-gray-300">
+                AI Estimation Suite
+              </p>
             </div>
           </Link>
 
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center gap-6">
-            <Link to="/" className="hover:text-indigo-500 transition-colors">Home</Link>
-            <Link to="/about" className="hover:text-indigo-500 transition-colors">About</Link>
-            <Link to="/services" className="hover:text-indigo-500 transition-colors">Services</Link>
-            <Link to="/portfolio" className="hover:text-indigo-500 transition-colors">Portfolio</Link>
-            <Link to="/insights" className="hover:text-indigo-500 transition-colors">Insights</Link>
-            <Link to="/suggestions" className="hover:text-indigo-500 transition-colors">Suggestions</Link>
-            <Link to="/faq" className="hover:text-indigo-500 transition-colors">FAQ</Link>
-            {user && <Link to="/dashboard" className="hover:text-indigo-500 transition-colors">Dashboard</Link>}
+          {/* DESKTOP LINKS */}
+          <div className="hidden md:flex items-center gap-8 text-sm font-medium">
+            {navItems.map(([label, path], i) => (
+              <motion.div
+                key={path}
+                whileHover={{ y: -2 }}
+                transition={{ type: "spring", stiffness: 200 }}
+              >
+                <Link
+                  to={path}
+                  className="
+                    relative group py-1
+                    text-gray-700 dark:text-gray-200
+                    hover:text-blue-600 dark:hover:text-blue-400
+                    transition-colors
+                  "
+                >
+                  {label}
+
+                  {/* PREMIUM UNDERLINE */}
+                  <span
+                    className="
+                      absolute left-0 -bottom-1 h-[2px] w-0
+                      bg-gradient-to-r from-blue-600 via-indigo-500 to-cyan-400
+                      rounded-full transition-all duration-300 group-hover:w-full
+                    "
+                  ></span>
+                </Link>
+              </motion.div>
+            ))}
+
+            {/* DASHBOARD */}
+            {user && (
+              <Link
+                to="/dashboard"
+                className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+              >
+                Dashboard
+              </Link>
+            )}
           </div>
 
-          {/* Right side actions */}
+          {/* RIGHT ACTIONS */}
           <div className="flex items-center gap-3">
-            {/* Search button */}
-            <button
+            {/* SEARCH BUTTON */}
+            <motion.button
+              whileHover={{ scale: 1.1 }}
               onClick={() => setIsSearchOpen(true)}
-              className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors"
-              aria-label="Open search"
+              className="
+                p-2 rounded-xl 
+                hover:bg-gray-100 dark:hover:bg-slate-700
+                transition-all shadow-sm
+              "
             >
               <FiSearch className="w-5 h-5" />
-            </button>
+            </motion.button>
 
-            {/* Theme toggle */}
-            <button
+            {/* THEME TOGGLE */}
+            <motion.button
+              whileHover={{ scale: 1.1, rotate: 10 }}
               onClick={toggleTheme}
-              className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors"
-              aria-label="Toggle theme"
+              className="
+                p-2 rounded-xl 
+                hover:bg-gray-100 dark:hover:bg-slate-700 
+                transition-all shadow-md
+              "
             >
-              {dark ? <FiSun className="w-5 h-5" /> : <FiMoon className="w-5 h-5" />}
-            </button>
+              {dark ? (
+                <FiSun className="w-5 h-5 text-yellow-400" />
+              ) : (
+                <FiMoon className="w-5 h-5 text-blue-600" />
+              )}
+            </motion.button>
 
-            {/* User actions */}
+            {/* LOGIN / USER */}
             {user ? (
               <div className="hidden md:flex items-center gap-3">
-                <span className="text-sm text-gray-700 dark:text-gray-300">{user.email}</span>
+                <span className="text-sm text-gray-700 dark:text-gray-300">
+                  {user.email}
+                </span>
                 <button
                   onClick={logout}
-                  className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600 transition-colors"
+                  className="
+                    px-4 py-1 rounded-lg 
+                    bg-red-500 text-white text-sm
+                    hover:bg-red-600 
+                    shadow-md transition-all
+                  "
                 >
                   Logout
                 </button>
@@ -103,63 +193,95 @@ export default function Navbar({ dark: propDark, setDark: propSetDark }) {
             ) : (
               <Link
                 to="/login"
-                className="hidden md:block px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+                className="
+                  hidden md:block px-4 py-2 rounded-lg 
+                  bg-gradient-to-r from-blue-600 to-indigo-600
+                  text-white text-sm shadow-lg
+                  hover:opacity-90 transition-all
+                "
               >
                 Login
               </Link>
             )}
 
-            {/* Mobile menu button */}
-            <button
+            {/* MOBILE MENU BUTTON */}
+            <motion.button
+              whileHover={{ scale: 1.1 }}
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="md:hidden p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors"
-              aria-label="Toggle mobile menu"
+              className="
+                md:hidden p-2 rounded-xl
+                hover:bg-gray-100 dark:hover:bg-slate-700 
+                transition-colors shadow-sm
+              "
             >
-              {isMobileMenuOpen ? <FiX className="w-5 h-5" /> : <FiMenu className="w-5 h-5" />}
-            </button>
+              {isMobileMenuOpen ? <FiX className="w-6 h-6" /> : <FiMenu className="w-6 h-6" />}
+            </motion.button>
           </div>
         </div>
+      </motion.nav>
 
-        {/* Mobile Navigation Menu */}
-        {isMobileMenuOpen && (
-          <div className="md:hidden fixed inset-0 top-20 bg-white dark:bg-slate-800 border-t border-gray-200 dark:border-slate-700 shadow-lg z-50">
-            <div className="px-6 py-4 space-y-3 max-h-[calc(100vh-5rem)] overflow-y-auto">
-              <Link to="/" className="block py-2 hover:text-indigo-500 transition-colors" onClick={closeMobileMenu}>Home</Link>
-              <Link to="/about" className="block py-2 hover:text-indigo-500 transition-colors" onClick={closeMobileMenu}>About</Link>
-              <Link to="/services" className="block py-2 hover:text-indigo-500 transition-colors" onClick={closeMobileMenu}>Services</Link>
-              <Link to="/portfolio" className="block py-2 hover:text-indigo-500 transition-colors" onClick={closeMobileMenu}>Portfolio</Link>
-              <Link to="/insights" className="block py-2 hover:text-indigo-500 transition-colors" onClick={closeMobileMenu}>Insights</Link>
-              <Link to="/faq" className="block py-2 hover:text-indigo-500 transition-colors" onClick={closeMobileMenu}>FAQ</Link>
-              <Link to="/contact" className="block py-2 hover:text-indigo-500 transition-colors" onClick={closeMobileMenu}>Contact</Link>
-              {user && <Link to="/dashboard" className="block py-2 hover:text-indigo-500 transition-colors" onClick={closeMobileMenu}>Dashboard</Link>}
+      {/* ================= MOBILE MENU ================= */}
+      {isMobileMenuOpen && (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="
+            md:hidden fixed inset-0 top-[72px]
+            bg-white dark:bg-slate-900
+            border-t border-gray-200 dark:border-slate-700
+            backdrop-blur-2xl shadow-xl z-40
+          "
+        >
+          <div className="px-6 py-5 space-y-3 overflow-y-auto max-h-[calc(100vh-80px)]">
+            {navItems.map(([label, path]) => (
+              <Link
+                key={path}
+                to={path}
+                onClick={closeMobile}
+                className="
+                  block text-gray-800 dark:text-gray-200 text-sm font-medium
+                  py-2 hover:text-blue-600 dark:hover:text-blue-400 transition-colors
+                "
+              >
+                {label}
+              </Link>
+            ))}
 
-              <div className="pt-3 border-t border-gray-200 dark:border-slate-700">
-                {user ? (
-                  <div className="space-y-2">
-                    <span className="block text-sm text-gray-700 dark:text-gray-300">{user.email}</span>
-                    <button
-                      onClick={() => { logout(); closeMobileMenu(); }}
-                      className="w-full px-3 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition-colors"
-                    >
-                      Logout
-                    </button>
-                  </div>
-                ) : (
-                  <Link
-                    to="/login"
-                    className="block w-full px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-center"
-                    onClick={closeMobileMenu}
-                  >
-                    Login
-                  </Link>
-                )}
-              </div>
+            {/* LOGIN / USER */}
+            <div className="pt-4 border-t border-gray-200 dark:border-slate-700">
+              {user ? (
+                <button
+                  onClick={() => {
+                    logout();
+                    closeMobile();
+                  }}
+                  className="
+                    w-full px-4 py-2 rounded-lg
+                    bg-red-500 text-white
+                    hover:bg-red-600 transition
+                  "
+                >
+                  Logout
+                </button>
+              ) : (
+                <Link
+                  to="/login"
+                  onClick={closeMobile}
+                  className="
+                    w-full block text-center px-4 py-2 rounded-lg
+                    bg-gradient-to-r from-blue-600 to-indigo-600
+                    text-white shadow-md hover:opacity-90
+                  "
+                >
+                  Login
+                </Link>
+              )}
             </div>
           </div>
-        )}
-      </nav>
+        </motion.div>
+      )}
 
-      {/* Search Modal */}
+      {/* SEARCH MODAL */}
       <SearchBar isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
     </>
   );

@@ -83,9 +83,11 @@ export default function Footer() {
               className="lg:col-span-1"
             >
               <div className="flex items-center gap-2 mb-4">
-                <div className="w-8 h-8 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center">
-                  <Sparkles className="w-4 h-4 text-white" />
-                </div>
+                <img
+                  src="/assets/logo (2).png"
+                  alt="Predicto.ai Logo"
+                  className="w-8 h-8 rounded-lg"
+                />
                 <h3 className="text-xl font-bold text-white">Predicto.ai</h3>
               </div>
               

@@ -13,7 +13,6 @@ import { useSelector } from 'react-redux';
 import { connectWebSocket, disconnectWebSocket, isWebSocketConnected } from '../services/websocket';
 
 export default function Dashboard() {
-  const [dark, setDark] = useState(false);
   const [estimate, setEstimate] = useState(null);
   const [isConnected, setIsConnected] = useState(false);
   const [realtimeMetrics, setRealtimeMetrics] = useState([]);
@@ -21,8 +20,6 @@ export default function Dashboard() {
   const [notifications, setNotifications] = useState([]);
 
   useEffect(() => {
-    const saved = localStorage.getItem('predicto_theme');
-    if (saved) setDark(saved === 'dark');
     const est = localStorage.getItem('estimate');
     if (est) setEstimate(JSON.parse(est));
     else {
@@ -91,6 +88,7 @@ export default function Dashboard() {
 
   const COLORS = ['#6366f1', '#10b981', '#f59e0b', '#ef4444'];
   const { user } = useSelector((state) => state.auth);
+  const dark = resolvedMode === 'dark';
 
   return (
     <Layout>

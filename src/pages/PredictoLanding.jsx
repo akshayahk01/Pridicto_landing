@@ -1,7 +1,10 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
-import { ArrowRight, Sparkles, Cpu, CheckCircle } from "lucide-react";
+import { ArrowRight, Sparkles, Cpu, CheckCircle, Star, Quote } from "lucide-react";
+import TestimonialModal from "../components/TestimonialModal";
+import VideoTestimonial from "../components/VideoTestimonial";
+import EnhancedTestimonials from "../components/EnhancedTestimonials";
 
 // ========= Animation helpers =========
 const fadeUp = (delay = 0) => ({
@@ -55,7 +58,11 @@ export default function PredictoAIModern() {
       {/* ========================== NAVBAR ========================== */}
       <nav className="flex justify-between items-center px-6 lg:px-12 py-4 lg:py-5 sticky top-0 z-50 backdrop-blur-xl bg-white/80 border-b border-gray-200/70 shadow-sm">
         <div className="flex items-center gap-2">
-          <div className="h-9 w-9 rounded-2xl bg-gradient-to-br from-blue-600 via-indigo-500 to-cyan-400 shadow-md shadow-blue-300/60" />
+          <img
+            src="/assets/logo (2).png"
+            alt="Predicto.ai Logo"
+            className="h-9 w-9 rounded-lg"
+          />
           <h1 className="text-2xl lg:text-3xl font-extrabold bg-gradient-to-r from-gray-900 via-gray-800 to-gray-700 bg-clip-text text-transparent tracking-tight">
             Predicto<span className="text-blue-600">.ai</span>
           </h1>
@@ -65,13 +72,13 @@ export default function PredictoAIModern() {
           <Link to="/" className="hover:text-blue-600 transition-colors">
             Home
           </Link>
-          <Link to="/features" className="hover:text-blue-600 transition-colors">
+          <Link to="/login" className="hover:text-blue-600 transition-colors">
             Features
           </Link>
-          <Link to="/estimate" className="hover:text-blue-600 transition-colors">
+          <Link to="/login" className="hover:text-blue-600 transition-colors">
             Estimate
           </Link>
-          <Link to="/services" className="hover:text-blue-600 transition-colors">
+          <Link to="/login" className="hover:text-blue-600 transition-colors">
             Services
           </Link>
           <Link to="/contact" className="hover:text-blue-600 transition-colors">
@@ -80,7 +87,7 @@ export default function PredictoAIModern() {
         </div>
 
         <Link
-          to="/estimate"
+          to="/login"
           className="hidden md:inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-semibold bg-gray-900 text-white hover:bg-black transition-all shadow-sm hover:shadow-md"
         >
           Launch Estimator
@@ -648,8 +655,22 @@ export default function PredictoAIModern() {
       </section>
 
       {/* ================= FOOTER ================= */}
-      <footer className="bg-white border-t border-gray-200 py-6 text-center text-[11px] text-gray-600">
-        © {new Date().getFullYear()} Predicto.ai — Retouch IT Services Pvt Ltd. All rights reserved.
+      <footer className="bg-white border-t border-gray-200 py-8">
+        <div className="max-w-6xl mx-auto px-6 lg:px-12">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <img
+                src="/assets/logo (2).png"
+                alt="Predicto.ai Logo"
+                className="w-8 h-8 rounded-lg"
+              />
+              <span className="text-lg font-semibold text-gray-900">Predicto.ai</span>
+            </div>
+            <p className="text-sm text-gray-600 text-center md:text-right">
+              © {new Date().getFullYear()} Predicto.ai — Retouch IT Services Pvt Ltd. All rights reserved.
+            </p>
+          </div>
+        </div>
       </footer>
     </div>
   );

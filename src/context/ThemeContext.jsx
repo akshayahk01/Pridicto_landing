@@ -19,17 +19,26 @@ export const ThemeProvider = ({ children }) => {
   };
 
   useEffect(() => {
-    // You can add logic here to detect system theme or load from localStorage
-    const savedTheme = localStorage.getItem('theme');
+    // Load theme from localStorage
+    const savedTheme = localStorage.getItem('predicto_theme');
     if (savedTheme) {
       setResolvedMode(savedTheme);
     }
   }, []);
 
+  useEffect(() => {
+    // Apply theme class to document
+    if (resolvedMode === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [resolvedMode]);
+
   const toggleTheme = () => {
     const newMode = resolvedMode === 'light' ? 'dark' : 'light';
     setResolvedMode(newMode);
-    localStorage.setItem('theme', newMode);
+    localStorage.setItem('predicto_theme', newMode);
   };
 
   return (

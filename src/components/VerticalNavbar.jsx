@@ -17,51 +17,22 @@ import {
 } from 'react-icons/fi';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 import SearchBar from './SearchBar';
 
 export default function VerticalNavbar({
-  dark: propDark,
-  setDark: propSetDark,
   isCollapsed,
   setIsCollapsed,
 }) {
   const { user, logout } = useAuth();
+  const { resolvedMode, toggleTheme } = useTheme();
   const location = useLocation();
-  const [localDark, setLocalDark] = useState(propDark ?? false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
 
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem('predicto_theme');
-      if (saved) {
-        const isDark = saved === 'dark';
-        if (typeof propSetDark === 'function') {
-          propSetDark(isDark);
-        } else {
-          setLocalDark(isDark);
-        }
-      }
-    } catch (e) {
-      // ignore
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  const dark = propDark ?? localDark;
-  const setDark = typeof propSetDark === 'function' ? propSetDark : setLocalDark;
-
-  const toggleTheme = () => {
-    const newDark = !dark;
-    try {
-      localStorage.setItem('predicto_theme', newDark ? 'dark' : 'light');
-    } catch (e) {
-      /* ignore */
-    }
-    setDark(newDark);
-  };
+  const dark = resolvedMode === 'dark';
 
   const navItems = [
-    { to: '/', label: 'Home', icon: FiHome },
+    { to: '/home', label: 'Home', icon: FiHome },
     { to: '/about', label: 'About', icon: FiInfo },
     { to: '/services', label: 'Services', icon: FiBriefcase },
     { to: '/estimate', label: 'Estimate', icon: FiTrendingUp },
@@ -102,9 +73,11 @@ export default function VerticalNavbar({
                     title="Predicto"
                   >
                     <div className="relative">
-                      <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-indigo-500 via-purple-500 to-teal-400 flex items-center justify-center text-white font-bold shadow-xl shadow-indigo-500/30 group-hover:shadow-indigo-500/50 transition-all duration-300">
-                        P
-                      </div>
+                      <img
+                        src="/assets/logo (2).png"
+                        alt="Predicto Logo"
+                        className="w-10 h-10 rounded-2xl shadow-xl shadow-indigo-500/30 group-hover:shadow-indigo-500/50 transition-all duration-300"
+                      />
                       {/* rotating gradient ring */}
                       <div className="pointer-events-none absolute inset-[-3px] rounded-3xl bg-[conic-gradient(at_50%_50%,rgba(59,130,246,0.2),transparent,rgba(16,185,129,0.25),transparent)] opacity-0 group-hover:opacity-100 animate-[spin_8s_linear_infinite] blur-[1px]" />
                     </div>

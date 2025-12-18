@@ -1,15 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
+import { useTheme } from '../context/ThemeContext';
 
 export default function Comparison() {
-  const [dark, setDark] = useState(false);
-
-  useEffect(() => {
-    const saved = localStorage.getItem('predicto_theme');
-    if (saved) setDark(saved === 'dark');
-  }, []);
+  const { resolvedMode } = useTheme();
+  const dark = resolvedMode === 'dark';
 
   const comparisonData = [
     { tool: 'Predicto.ai', accuracy: 95, speed: 5, cost: 0 },
@@ -29,7 +26,7 @@ export default function Comparison() {
 
   return (
     <div className={`min-h-screen transition-colors duration-500 ${dark ? 'bg-slate-900 text-gray-100':'bg-white text-gray-800'}`}>
-      <Navbar dark={dark} setDark={setDark} />
+      <Navbar />
       <main className="pt-28 pb-16 max-w-7xl mx-auto px-6 space-y-12">
         <div className="text-center">
           <h1 className="text-4xl font-bold">Predicto.ai vs Competitors</h1>

@@ -1,387 +1,753 @@
-import React, { useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { useNavigate } from 'react-router-dom';
-import Layout from '../components/Layout';
-import Breadcrumb from '../components/Breadcrumb';
-import axios from 'axios';
-import { motion } from 'framer-motion';
-import { FaCalculator, FaRobot, FaChartLine, FaClock, FaCheckCircle, FaArrowRight, FaArrowLeft, FaDownload, FaShare, FaUpload, FaMapMarkerAlt, FaUsers, FaCodeBranch } from 'react-icons/fa';
-import LoadingSpinner from '../components/LoadingSpinner';
+import React, { useState, useEffect, useMemo } from "react";
+import { useForm } from "react-hook-form";
+import { motion, AnimatePresence } from "framer-motion";
+import { useNavigate } from "react-router-dom";
+import {
+  FaCalculator,
+  FaRobot,
+  FaChartLine,
+  FaClock,
+  FaCheckCircle,
+  FaArrowRight,
+  FaArrowLeft,
+  FaDownload,
+  FaShareAlt,
+  FaUpload,
+  FaMapMarkerAlt,
+  FaUsers,
+  FaCodeBranch,
+  FaTools,
+  FaChartPie,
+  FaChartBar,
+  FaExclamationTriangle,
+} from "react-icons/fa";
 
-export default function EstimationForm() {
-  const [step, setStep] = useState(1);
-  const [isCalculating, setIsCalculating] = useState(false);
-  const [estimateResult, setEstimateResult] = useState(null);
-  const { register, handleSubmit, watch, formState: { errors } } = useForm();
+// -----------------------------------------------
+// GLOBAL ANIMATIONS
+// -----------------------------------------------
+
+const fadeIn = {
+  initial: { opacity: 0, y: 30 },
+  animate: { opacity: 1, y: 0, transition: { duration: 0.6 } },
+};
+
+const fadeRight = {
+  initial: { opacity: 0, x: 40 },
+  animate: { opacity: 1, x: 0, transition: { duration: 0.6 } },
+};
+
+const fadeLeft = {
+  initial: { opacity: 0, x: -40 },
+  animate: { opacity: 1, x: 0, transition: { duration: 0.6 } },
+};
+
+// -----------------------------------------------
+// AUTOSAVE TO LOCAL STORAGE
+// -----------------------------------------------
+
+const STORAGE_KEY = "enterprise_estimator_draft";
+
+const saveDraft = (data) => {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+};
+
+const loadDraft = () => {
+  try {
+    return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
+  } catch {
+    return {};
+  }
+};
+
+// -----------------------------------------------
+// AI RISK ENGINE
+// -----------------------------------------------
+
+function calculateRiskScore({ complexity, teamSize, features }) {
+  let score = 0;
+
+  if (complexity === "high") score += 35;
+  if (teamSize > 8) score += 20;
+  if (features?.length > 8) score += 25;
+
+  return Math.min(score, 100);
+}
+
+// -----------------------------------------------
+// AI TEAM STRUCTURE ENGINE
+// -----------------------------------------------
+
+function predictTeamStructure({ projectType, complexity }) {
+  const base = {
+    web: ["Frontend Dev", "Backend Dev", "QA"],
+    mobile: ["Mobile Dev", "API Dev", "QA"],
+    ai: ["ML Engineer", "Data Scientist", "Backend"],
+    ecommerce: ["Frontend", "Backend", "DevOps", "QA"],
+  };
+
+  let team = base[projectType] || [];
+
+  if (complexity === "high") team.push("Solution Architect");
+  if (projectType === "ai" && complexity !== "low") team.push("AI Researcher");
+
+  return team;
+}
+
+// -----------------------------------------------
+// AI TIMELINE RECOMMENDATION ENGINE
+// -----------------------------------------------
+
+function calculateTimeline(duration, complexity) {
+  let factor = 1.0;
+  if (complexity === "medium") factor = 1.2;
+  if (complexity === "high") factor = 1.45;
+
+  return Math.ceil(duration * factor);
+}
+
+// -----------------------------------------------
+// COST ENGINE
+// -----------------------------------------------
+
+function generateCostEstimate(data) {
+  const baseRates = {
+    web: 25000,
+    mobile: 40000,
+    ai: 70000,
+    ecommerce: 55000,
+  };
+
+  const complexityFactor = {
+    low: 1.0,
+    medium: 1.45,
+    high: 2.2,
+  };
+
+  const featureCost = data.features?.length * 3000;
+
+  const addOnsCost =
+    (data.addons?.cloud ? 18000 : 0) +
+    (data.addons?.security ? 22000 : 0) +
+    (data.addons?.analytics ? 12000 : 0);
+
+  const result =
+    baseRates[data.projectType] * complexityFactor[data.complexity] +
+    featureCost +
+    addOnsCost +
+    data.teamSize * 8000;
+
+  return Math.round(result);
+}
+export default function UltraEstimator() {
   const navigate = useNavigate();
+  const { register, handleSubmit, watch, setValue } = useForm({
+    defaultValues: loadDraft(),
+  });
 
-  const projectType = watch('projectType');
-  const complexity = watch('complexity');
+  const [step, setStep] = useState(1);
+  const [estimate, setEstimate] = useState(null);
 
-  const onSubmit = async (data) => {
-    setIsCalculating(true);
-    try {
-      // Simulate AI calculation with realistic pricing
-      const aiEstimate = calculateAIEstimate(data);
-      setEstimateResult(aiEstimate);
+  // Watch all form fields for autosave
+  const formWatch = watch();
+  useEffect(() => {
+    saveDraft(formWatch);
+  }, [formWatch]);
 
-      // Store estimate in localStorage
-      localStorage.setItem('estimate', JSON.stringify({
-        ...aiEstimate,
-        formData: data,
-        timestamp: new Date().toISOString()
-      }));
+  const nextStep = () => setStep((s) => s + 1);
+  const prevStep = () => setStep((s) => s - 1);
 
-      setTimeout(() => {
-        setIsCalculating(false);
-        setStep(4); // Show results
-      }, 3000);
-    } catch (error) {
-      setIsCalculating(false);
-      alert('Error generating estimate. Please try again.');
-    }
+  // Selected values
+  const projectType = watch("projectType");
+  const complexity = watch("complexity");
+  const duration = watch("duration");
+  const teamSize = watch("teamSize");
+  const features = watch("features") || [];
+  const addons = watch("addons") || {};
+
+  // -----------------------------------------------
+  // SUBMIT HANDLER (AI ESTIMATION)
+  // -----------------------------------------------
+  const onSubmit = () => {
+    const cost = generateCostEstimate(formWatch);
+    const timeline = calculateTimeline(duration, complexity);
+    const risk = calculateRiskScore(formWatch);
+    const team = predictTeamStructure(formWatch);
+
+    setEstimate({
+      cost,
+      risk,
+      timeline,
+      team,
+      data: formWatch,
+    });
+
+    setStep(4);
   };
 
-  const calculateAIEstimate = (data) => {
-    const baseRates = {
-      web: { low: 15000, medium: 35000, high: 75000 },
-      mobile: { low: 20000, medium: 50000, high: 100000 },
-      ai: { low: 30000, medium: 80000, high: 200000 },
-      ecommerce: { low: 25000, medium: 60000, high: 120000 }
-    };
+  // -----------------------------------------------
+  // STEP 1 — PROJECT TYPE
+  // -----------------------------------------------
+  const ProjectTypeStep = () => (
+    <motion.div
+      initial="initial"
+      animate="animate"
+      variants={fadeIn}
+      className="p-10 rounded-3xl bg-white shadow-xl backdrop-blur-xl border border-gray-200"
+    >
+      <h2 className="text-3xl font-bold flex items-center gap-3 mb-6">
+        <FaCalculator className="text-indigo-600" />
+        Project Classification
+      </h2>
 
-    const basePrice = baseRates[data.projectType]?.[data.complexity] || 30000;
-    const teamMultiplier = data.teamSize * 1.2;
-    const durationMultiplier = Math.max(0.8, data.duration / 12); // Normalize duration
-    const techMultiplier = data.frontend && data.backend ? 1.3 : 1.1;
+      <p className="text-gray-600 mb-6">
+        Choose the project category so AI can benchmark cost and effort.
+      </p>
 
-    const totalEstimate = Math.round(basePrice * teamMultiplier * durationMultiplier * techMultiplier);
-
-    return {
-      totalCost: totalEstimate,
-      breakdown: {
-        development: Math.round(totalEstimate * 0.6),
-        design: Math.round(totalEstimate * 0.15),
-        testing: Math.round(totalEstimate * 0.1),
-        projectManagement: Math.round(totalEstimate * 0.1),
-        contingency: Math.round(totalEstimate * 0.05)
-      },
-      timeline: Math.ceil(data.duration * 1.2), // weeks
-      confidence: data.complexity === 'low' ? 95 : data.complexity === 'medium' ? 85 : 75,
-      aiInsights: [
-        `Based on ${data.teamSize} team members, expect ${Math.round(data.duration * 0.8)} productive weeks`,
-        data.complexity === 'high' ? 'Consider phased delivery to reduce risks' : 'Standard delivery timeline recommended',
-        `Market rate for similar projects: $${Math.round(totalEstimate * 0.9).toLocaleString()} - $${Math.round(totalEstimate * 1.1).toLocaleString()}`
-      ]
-    };
-  };
-
-  const nextStep = () => setStep(step + 1);
-  const prevStep = () => setStep(step - 1);
-
-  const handleDownloadEstimate = () => {
-    const estimateData = {
-      ...estimateResult,
-      generatedAt: new Date().toISOString(),
-      projectDetails: watch()
-    };
-
-    const dataStr = JSON.stringify(estimateData, null, 2);
-    const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
-
-    const exportFileDefaultName = `project-estimate-${Date.now()}.json`;
-
-    const linkElement = document.createElement('a');
-    linkElement.setAttribute('href', dataUri);
-    linkElement.setAttribute('download', exportFileDefaultName);
-    linkElement.click();
-  };
-
-  return (
-    <Layout>
-      <div className="min-h-screen bg-gradient-to-b from-indigo-50 via-white to-indigo-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 text-gray-800 dark:text-gray-100">
-        <main className="pt-28 pb-16 max-w-4xl mx-auto px-6">
-          <Breadcrumb />
-          <motion.div initial={{opacity:0,y:30}} animate={{opacity:1,y:0}} className="text-center mb-8">
-            <h1 className="text-4xl font-bold flex items-center justify-center gap-3">
-              <FaCalculator className="text-indigo-600" />
-              AI Project Estimation
-            </h1>
-            <p className="text-gray-500 dark:text-gray-300 mt-2">Get accurate, AI-powered project estimates in minutes.</p>
+      <div className="grid md:grid-cols-2 gap-6">
+        {[
+          { id: "web", label: "Web Application", icon: "🌐" },
+          { id: "mobile", label: "Mobile App", icon: "📱" },
+          { id: "ai", label: "AI / ML Project", icon: "🤖" },
+          { id: "ecommerce", label: "E-commerce Platform", icon: "🛒" },
+        ].map((p) => (
+          <motion.div
+            key={p.id}
+            whileHover={{ scale: 1.03 }}
+            className={`p-6 rounded-2xl cursor-pointer border transition-all ${
+              projectType === p.id
+                ? "border-indigo-600 bg-indigo-50"
+                : "border-gray-300 bg-white"
+            }`}
+            onClick={() => setValue("projectType", p.id)}
+          >
+            <div className="text-4xl mb-3">{p.icon}</div>
+            <h3 className="font-semibold">{p.label}</h3>
           </motion.div>
+        ))}
+      </div>
 
-          {/* Progress Indicator */}
-          <div className="flex justify-center mb-8">
-            <div className="flex items-center space-x-4">
-              {[1, 2, 3, 4].map((stepNum) => (
-                <div key={stepNum} className="flex items-center">
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
-                    step >= stepNum ? 'bg-indigo-600 text-white' : 'bg-gray-200 text-gray-600'
-                  }`}>
-                    {stepNum}
-                  </div>
-                  {stepNum < 4 && <div className={`w-12 h-1 ${step > stepNum ? 'bg-indigo-600' : 'bg-gray-200'}`} />}
-                </div>
-              ))}
-            </div>
+      <div className="flex justify-end mt-8">
+        <button
+          disabled={!projectType}
+          onClick={nextStep}
+          className={`px-8 py-3 rounded-xl text-white font-bold flex items-center gap-2 ${
+            projectType
+              ? "bg-indigo-600 hover:bg-indigo-700"
+              : "bg-gray-400 cursor-not-allowed"
+          }`}
+        >
+          Next <FaArrowRight />
+        </button>
+      </div>
+    </motion.div>
+  );
+
+  // -----------------------------------------------
+  // STEP 2 — DETAILS + FEATURES + ADDONS
+  // -----------------------------------------------
+  const ProjectDetailsStep = () => (
+    <motion.div
+      initial="initial"
+      animate="animate"
+      variants={fadeRight}
+      className="p-10 rounded-3xl bg-white shadow-xl backdrop-blur-xl border border-gray-200"
+    >
+      <h2 className="text-3xl font-bold flex items-center gap-3 mb-6">
+        <FaChartLine className="text-green-600" />
+        Project Details
+      </h2>
+
+      {/* TEAM + DURATION */}
+      <div className="grid md:grid-cols-2 gap-6 mb-10">
+        <div>
+          <label className="font-medium flex items-center gap-2">
+            <FaUsers className="text-indigo-600" /> Team Size
+          </label>
+          <input
+            type="number"
+            {...register("teamSize", { min: 1 })}
+            className="mt-2 w-full p-4 rounded-xl border border-gray-300"
+            placeholder="Number of developers"
+          />
+        </div>
+
+        <div>
+          <label className="font-medium">Estimated Duration (weeks)</label>
+          <input
+            type="number"
+            {...register("duration", { min: 1 })}
+            className="mt-2 w-full p-4 rounded-xl border border-gray-300"
+            placeholder="e.g., 8 weeks"
+          />
+        </div>
+
+        <div>
+          <label className="font-medium">Complexity Level</label>
+          <select
+            {...register("complexity")}
+            className="mt-2 w-full p-4 rounded-xl border border-gray-300"
+          >
+            <option value="">Select complexity…</option>
+            <option value="low">Low — Basic</option>
+            <option value="medium">Medium — Moderate</option>
+            <option value="high">High — Advanced</option>
+          </select>
+        </div>
+
+        <div>
+          <label className="font-medium flex items-center gap-2">
+            <FaMapMarkerAlt className="text-indigo-600" />
+            Location (optional)
+          </label>
+          <input
+            type="text"
+            {...register("location")}
+            className="mt-2 w-full p-4 rounded-xl border border-gray-300"
+            placeholder="City, Country"
+          />
+        </div>
+      </div>
+
+      {/* FEATURES SELECTION */}
+      <h3 className="text-xl font-bold mt-6 mb-4 flex items-center gap-2">
+        <FaTools className="text-purple-600" />
+        Features
+      </h3>
+      <div className="grid md:grid-cols-2 gap-4 mb-10">
+        {[
+          "Authentication",
+          "Admin Dashboard",
+          "User Dashboard",
+          "Real-time Chat",
+          "Payment Gateway",
+          "Analytics Reporting",
+          "Multi-language Support",
+          "Push Notifications",
+          "AI Automation",
+          "API Integrations",
+        ].map((f) => (
+          <label
+            key={f}
+            className="p-4 border rounded-xl cursor-pointer flex items-center gap-3 hover:bg-gray-50"
+          >
+            <input
+              type="checkbox"
+              value={f}
+              {...register("features")}
+              className="w-4 h-4"
+            />
+            {f}
+          </label>
+        ))}
+      </div>
+
+      {/* ADDONS */}
+      <h3 className="text-xl font-bold mt-6 mb-4 flex items-center gap-2">
+        <FaChartPie className="text-orange-600" />
+        Add-On Services
+      </h3>
+
+      <div className="space-y-4">
+        <label className="flex items-center gap-3 p-4 border rounded-xl">
+          <input type="checkbox" {...register("addons.cloud")} />
+          Cloud Hosting Setup (+ ₹18,000)
+        </label>
+        <label className="flex items-center gap-3 p-4 border rounded-xl">
+          <input type="checkbox" {...register("addons.security")} />
+          Security Hardening (+ ₹22,000)
+        </label>
+        <label className="flex items-center gap-3 p-4 border rounded-xl">
+          <input type="checkbox" {...register("addons.analytics")} />
+          Analytics Dashboard (+ ₹12,000)
+        </label>
+      </div>
+
+      {/* Navigation */}
+      <div className="flex justify-between mt-10">
+        <button
+          onClick={prevStep}
+          className="px-8 py-3 rounded-xl border font-bold flex items-center gap-2"
+        >
+          <FaArrowLeft /> Back
+        </button>
+
+        <button
+          disabled={!complexity || !teamSize || !duration}
+          onClick={nextStep}
+          className={`px-8 py-3 rounded-xl text-white font-bold flex items-center gap-2 ${
+            complexity && teamSize && duration
+              ? "bg-indigo-600 hover:bg-indigo-700"
+              : "bg-gray-400 cursor-not-allowed"
+          }`}
+        >
+          Next <FaArrowRight />
+        </button>
+      </div>
+    </motion.div>
+  );
+  // -----------------------------------------------
+  // STEP 3 — TECH STACK + REQUIREMENTS + DOCUMENTS
+  // -----------------------------------------------
+  const TechStackStep = () => {
+    const summary = {
+      projectType: projectType || "—",
+      complexity: complexity || "—",
+      duration: duration ? duration + " weeks" : "—",
+      teamSize: teamSize || "—",
+      features: features.length ? features.join(", ") : "None Selected",
+    };
+
+    return (
+      <motion.div
+        initial="initial"
+        animate="animate"
+        variants={fadeLeft}
+        className="relative grid md:grid-cols-3 gap-10 p-10 rounded-3xl bg-white shadow-xl border border-gray-200"
+      >
+        {/* ---------------- LEFT SIDE: FORM ---------------- */}
+        <div className="md:col-span-2">
+
+          <h2 className="text-3xl font-bold mb-6 flex items-center gap-3">
+            <FaCodeBranch className="text-indigo-600" />
+            Tech Stack & Requirements
+          </h2>
+
+          {/* TECH STACK CHOICES */}
+          <div className="grid md:grid-cols-2 gap-6 mb-10">
+            {[
+              "MERN",
+              "MEAN",
+              "Django",
+              "Spring Boot",
+              "Laravel",
+              "Ruby on Rails",
+              "Serverless / Firebase",
+              "Custom Stack",
+            ].map((stack) => (
+              <motion.div
+                key={stack}
+                whileHover={{ scale: 1.03 }}
+                onClick={() => setValue("techStack", stack)}
+                className={`p-5 rounded-xl border cursor-pointer ${
+                  watch("techStack") === stack
+                    ? "border-indigo-600 bg-indigo-50"
+                    : "border-gray-300 bg-white"
+                }`}
+              >
+                <h3 className="font-semibold">{stack}</h3>
+              </motion.div>
+            ))}
           </div>
 
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
-            {step === 1 && (
-              <motion.div initial={{opacity:0,x:-50}} animate={{opacity:1,x:0}} className="p-8 rounded-2xl bg-white dark:bg-slate-800 shadow-lg">
-                <h2 className="text-2xl font-semibold mb-6 flex items-center gap-3">
-                  <FaRobot className="text-indigo-600" />
-                  Step 1: Project Type
-                </h2>
-                <div className="space-y-4">
-                  <label className="block">
-                    <span className="text-gray-700 dark:text-gray-300 font-medium">What type of project are you planning?</span>
-                    <select {...register('projectType', { required: true })} className="mt-2 block w-full p-4 border border-gray-300 rounded-lg dark:bg-slate-700 dark:border-slate-600 focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
-                      <option value="">Select project type...</option>
-                      <option value="web">🌐 Web Application</option>
-                      <option value="mobile">📱 Mobile App</option>
-                      <option value="ai">🤖 AI/ML Project</option>
-                      <option value="ecommerce">🛒 E-commerce Platform</option>
-                    </select>
-                    {errors.projectType && <span className="text-red-500 text-sm mt-1 block">This field is required</span>}
-                  </label>
-                </div>
-                <div className="mt-8 flex justify-end">
-                  <button type="button" onClick={nextStep} className="px-8 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg hover:from-indigo-700 hover:to-purple-700 font-semibold flex items-center gap-2">
-                    Next Step <FaArrowRight />
-                  </button>
-                </div>
-              </motion.div>
-            )}
+          {/* REQUIREMENTS */}
+          <div className="mb-10">
+            <label className="font-semibold text-gray-700">Project Requirements</label>
+            <textarea
+              {...register("requirements")}
+              rows="4"
+              className="mt-2 w-full p-4 rounded-xl border border-gray-300"
+              placeholder="Describe key features, workflows, integrations…"
+            />
+          </div>
 
-            {step === 2 && (
-              <motion.div initial={{opacity:0,x:50}} animate={{opacity:1,x:0}} className="p-8 rounded-2xl bg-white dark:bg-slate-800 shadow-lg">
-                <h2 className="text-2xl font-semibold mb-6 flex items-center gap-3">
-                  <FaChartLine className="text-green-600" />
-                  Step 2: Project Details
-                </h2>
-                <div className="grid md:grid-cols-2 gap-6">
-                  <label className="block">
-                    <span className="text-gray-700 dark:text-gray-300 font-medium flex items-center gap-2">
-                      <FaUsers className="text-indigo-600" />
-                      Team Size
-                    </span>
-                    <input
-                      type="number"
-                      {...register('teamSize', { required: true, min: 1 })}
-                      className="mt-2 block w-full p-4 border border-gray-300 rounded-lg dark:bg-slate-700 dark:border-slate-600 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                      placeholder="Number of developers"
-                    />
-                    {errors.teamSize && <span className="text-red-500 text-sm mt-1 block">Required, min 1</span>}
-                  </label>
-                  <label className="block">
-                    <span className="text-gray-700 dark:text-gray-300 font-medium">Project Complexity Level</span>
-                    <select {...register('complexity', { required: true })} className="mt-2 block w-full p-4 border border-gray-300 rounded-lg dark:bg-slate-700 dark:border-slate-600 focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
-                      <option value="">Select complexity...</option>
-                      <option value="low">🟢 Low - Basic features</option>
-                      <option value="medium">🟡 Medium - Standard features</option>
-                      <option value="high">🔴 High - Advanced features</option>
-                    </select>
-                    {errors.complexity && <span className="text-red-500 text-sm mt-1 block">This field is required</span>}
-                  </label>
-                  <label className="block">
-                    <span className="text-gray-700 dark:text-gray-300 font-medium flex items-center gap-2">
-                      <FaMapMarkerAlt className="text-indigo-600" />
-                      Geographic Location
-                    </span>
-                    <input
-                      type="text"
-                      {...register('location')}
-                      className="mt-2 block w-full p-4 border border-gray-300 rounded-lg dark:bg-slate-700 dark:border-slate-600 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                      placeholder="City, Country (affects cost estimates)"
-                    />
-                  </label>
-                  <label className="block">
-                    <span className="text-gray-700 dark:text-gray-300 font-medium">Estimated Duration (weeks)</span>
-                    <input
-                      type="number"
-                      {...register('duration', { required: true, min: 1 })}
-                      className="mt-2 block w-full p-4 border border-gray-300 rounded-lg dark:bg-slate-700 dark:border-slate-600 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                      placeholder="How many weeks do you expect?"
-                    />
-                    {errors.duration && <span className="text-red-500 text-sm mt-1 block">Required, min 1</span>}
-                  </label>
-                </div>
-                <div className="mt-6">
-                  <label className="block">
-                    <span className="text-gray-700 dark:text-gray-300 font-medium flex items-center gap-2">
-                      <FaUpload className="text-indigo-600" />
-                      Upload Documents (Optional)
-                    </span>
-                    <div className="mt-2">
-                      <input
-                        type="file"
-                        {...register('documents')}
-                        multiple
-                        accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.png"
-                        className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
-                      />
-                      <p className="mt-1 text-sm text-gray-500">Upload blueprints, budgets, or project documents for more accurate estimates</p>
-                    </div>
-                  </label>
-                </div>
-                <div className="mt-8 flex justify-between">
-                  <button type="button" onClick={prevStep} className="px-8 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-700 font-semibold flex items-center gap-2">
-                    <FaArrowLeft /> Back
-                  </button>
-                  <button type="button" onClick={nextStep} className="px-8 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg hover:from-indigo-700 hover:to-purple-700 font-semibold flex items-center gap-2">
-                    Next Step <FaArrowRight />
-                  </button>
-                </div>
-              </motion.div>
-            )}
+          {/* FILE UPLOAD */}
+          <div className="mb-10">
+            <label className="font-semibold text-gray-700 flex items-center gap-2">
+              <FaUpload className="text-indigo-600" />
+              Upload Documents
+            </label>
 
-            {step === 3 && (
-              <motion.div initial={{opacity:0,x:-50}} animate={{opacity:1,x:0}} className="p-8 rounded-2xl bg-white dark:bg-slate-800 shadow-lg">
-                <h2 className="text-2xl font-semibold mb-6 flex items-center gap-3">
-                  <FaCheckCircle className="text-purple-600" />
-                  Step 3: Tech Stack (Optional)
-                </h2>
-                <div className="grid md:grid-cols-2 gap-6">
-                  <label className="block">
-                    <span className="text-gray-700 dark:text-gray-300 font-medium flex items-center gap-2">
-                      <FaCodeBranch className="text-indigo-600" />
-                      Preferred Tech Stack
-                    </span>
-                    <select {...register('techStack')} className="mt-2 block w-full p-4 border border-gray-300 rounded-lg dark:bg-slate-700 dark:border-slate-600 focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
-                      <option value="">Select preferred stack...</option>
-                      <option value="mern">MERN (MongoDB, Express, React, Node)</option>
-                      <option value="mean">MEAN (MongoDB, Express, Angular, Node)</option>
-                      <option value="django">Django (Python)</option>
-                      <option value="rails">Ruby on Rails</option>
-                      <option value="laravel">Laravel (PHP)</option>
-                      <option value="spring">Spring Boot (Java)</option>
-                      <option value="serverless">Serverless (AWS Lambda, Firebase)</option>
-                      <option value="other">Other/Custom</option>
-                    </select>
-                  </label>
-                  <label className="block">
-                    <span className="text-gray-700 dark:text-gray-300 font-medium">Additional Requirements</span>
-                    <textarea
-                      {...register('requirements')}
-                      className="mt-2 block w-full p-4 border border-gray-300 rounded-lg dark:bg-slate-700 dark:border-slate-600 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                      placeholder="Any specific features, integrations, or requirements..."
-                      rows="3"
-                    />
-                  </label>
-                </div>
-                <div className="mt-8 flex justify-between">
-                  <button type="button" onClick={prevStep} className="px-8 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-700 font-semibold flex items-center gap-2">
-                    <FaArrowLeft /> Back
-                  </button>
-                  <button type="submit" className="px-8 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg hover:from-indigo-700 hover:to-purple-700 font-semibold flex items-center gap-2">
-                    {isCalculating ? (
-                      <>
-                        <LoadingSpinner />
-                        AI Calculating...
-                      </>
-                    ) : (
-                      <>
-                        <FaRobot className="mr-2" />
-                        Generate AI Estimate
-                      </>
-                    )}
-                  </button>
-                </div>
-              </motion.div>
-            )}
+            <input
+              type="file"
+              multiple
+              {...register("documents")}
+              className="mt-3 block w-full text-sm text-gray-600 file:bg-indigo-50 
+              file:px-4 file:py-2 file:rounded-lg file:border-none file:mr-4 file:text-indigo-700"
+            />
 
-            {step === 4 && estimateResult && (
-              <motion.div initial={{opacity:0,y:50}} animate={{opacity:1,y:0}} className="space-y-6">
-                {/* Results Header */}
-                <div className="text-center p-8 rounded-2xl bg-gradient-to-r from-green-500 to-blue-600 text-white">
-                  <h2 className="text-3xl font-bold mb-2">AI Estimate Complete!</h2>
-                  <p className="text-xl opacity-90">Here's your personalized project estimate</p>
-                </div>
-
-                {/* Total Cost */}
-                <div className="p-8 rounded-2xl bg-white dark:bg-slate-800 shadow-lg text-center">
-                  <h3 className="text-2xl font-bold mb-4">Total Estimated Cost</h3>
-                  <div className="text-5xl font-bold text-indigo-600 mb-2">
-                    ${estimateResult.totalCost.toLocaleString()}
-                  </div>
-                  <div className="text-gray-500 dark:text-gray-400">
-                    {estimateResult.confidence}% confidence level
-                  </div>
-                </div>
-
-                {/* Cost Breakdown */}
-                <div className="p-8 rounded-2xl bg-white dark:bg-slate-800 shadow-lg">
-                  <h3 className="text-2xl font-bold mb-6 flex items-center gap-3">
-                    <FaChartLine className="text-indigo-600" />
-                    Cost Breakdown
-                  </h3>
-                  <div className="space-y-4">
-                    {Object.entries(estimateResult.breakdown).map(([category, amount]) => (
-                      <div key={category} className="flex justify-between items-center p-4 bg-gray-50 dark:bg-slate-700 rounded-lg">
-                        <span className="font-medium capitalize">{category.replace(/([A-Z])/g, ' $1')}</span>
-                        <span className="font-bold text-indigo-600">${amount.toLocaleString()}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Timeline */}
-                <div className="p-8 rounded-2xl bg-white dark:bg-slate-800 shadow-lg">
-                  <h3 className="text-2xl font-bold mb-6 flex items-center gap-3">
-                    <FaClock className="text-green-600" />
-                    Project Timeline
-                  </h3>
-                  <div className="text-center">
-                    <div className="text-4xl font-bold text-green-600 mb-2">{estimateResult.timeline} weeks</div>
-                    <p className="text-gray-600 dark:text-gray-300">Estimated completion time</p>
-                  </div>
-                </div>
-
-                {/* AI Insights */}
-                <div className="p-8 rounded-2xl bg-white dark:bg-slate-800 shadow-lg">
-                  <h3 className="text-2xl font-bold mb-6 flex items-center gap-3">
-                    <FaRobot className="text-purple-600" />
-                    AI Insights & Recommendations
-                  </h3>
-                  <div className="space-y-4">
-                    {estimateResult.aiInsights.map((insight, index) => (
-                      <div key={index} className="flex items-start gap-3 p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
-                        <FaRobot className="text-purple-600 mt-1 flex-shrink-0" />
-                        <span className="text-gray-700 dark:text-gray-300">{insight}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Actions */}
-                <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                  <button
-                    onClick={handleDownloadEstimate}
-                    className="px-8 py-4 bg-green-600 text-white rounded-xl font-bold hover:bg-green-700 transition-all duration-300 flex items-center justify-center gap-2"
+            {/* FILE PREVIEW */}
+            {watch("documents")?.length > 0 && (
+              <div className="mt-4 space-y-2">
+                {[...watch("documents")].map((file, i) => (
+                  <div
+                    key={i}
+                    className="p-3 bg-gray-50 rounded-lg border border-gray-200 text-sm"
                   >
-                    <FaDownload />
-                    Download Estimate
-                  </button>
-                  <button
-                    onClick={() => navigate('/contact')}
-                    className="px-8 py-4 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 transition-all duration-300 flex items-center justify-center gap-2"
-                  >
-                    <FaShare />
-                    Get Detailed Quote
-                  </button>
-                  <button
-                    onClick={() => navigate('/dashboard')}
-                    className="px-8 py-4 border-2 border-indigo-600 text-indigo-600 rounded-xl font-bold hover:bg-indigo-600 hover:text-white transition-all duration-300"
-                  >
-                    View Dashboard
-                  </button>
-                </div>
-              </motion.div>
+                    📄 {file.name}
+                  </div>
+                ))}
+              </div>
             )}
-          </form>
-        </main>
-      </div>
-    </Layout>
-  );
-}
+          </div>
+
+          {/* BUTTONS */}
+          <div className="flex justify-between mt-6">
+            <button
+              onClick={prevStep}
+              className="px-8 py-3 rounded-xl border font-bold flex items-center gap-2"
+            >
+              <FaArrowLeft /> Back
+            </button>
+
+            <button
+              onClick={onSubmit}
+              className="px-8 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 
+              text-white rounded-xl font-bold flex items-center gap-2 hover:scale-105 transition"
+            >
+              <FaRobot /> Generate AI Estimate
+            </button>
+          </div>
+        </div>
+
+        {/* ---------------- RIGHT SIDE: LIVE SUMMARY ---------------- */}
+        <motion.div
+          initial={{ opacity: 0, x: 40 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 0.2 }}
+          className="hidden md:block p-6 rounded-2xl bg-slate-900 text-white shadow-xl sticky top-24 h-fit"
+        >
+          <h3 className="text-xl font-bold mb-4">Live Summary</h3>
+
+          <div className="space-y-4 text-sm">
+            <div>
+              <p className="text-slate-400">Project Type</p>
+              <p className="font-semibold">{summary.projectType}</p>
+            </div>
+
+            <div>
+              <p className="text-slate-400">Complexity</p>
+              <p className="font-semibold">{summary.complexity}</p>
+            </div>
+
+            <div>
+              <p className="text-slate-400">Duration</p>
+              <p className="font-semibold">{summary.duration}</p>
+            </div>
+
+            <div>
+              <p className="text-slate-400">Team Size</p>
+              <p className="font-semibold">{summary.teamSize}</p>
+            </div>
+
+            <div>
+              <p className="text-slate-400">Features</p>
+              <p className="font-semibold leading-snug">{summary.features}</p>
+            </div>
+
+            <hr className="border-slate-600 my-3" />
+
+            <p className="text-xs text-slate-400">
+              Summary updates automatically as you modify your project.
+            </p>
+          </div>
+        </motion.div>
+      </motion.div>
+    );
+  };
+  // -----------------------------------------------
+  // STEP 4 — AI RESULTS PAGE (ULTRA PREMIUM OUTPUT)
+  // -----------------------------------------------
+  const ResultsStep = () => {
+    if (!estimateResult) return null;
+
+    return (
+      <motion.div
+        initial="initial"
+        animate="animate"
+        variants={fadeUp}
+        className="space-y-10"
+      >
+        {/* ---------------- HEADER ---------------- */}
+        <motion.div
+          variants={fadeIn}
+          className="p-10 rounded-3xl text-center bg-gradient-to-br
+          from-indigo-600 to-purple-600 text-white shadow-2xl"
+        >
+          <h2 className="text-4xl font-bold mb-2">AI Estimate Complete</h2>
+          <p className="text-lg opacity-80">
+            Your personalized project cost • Risk • Timeline analysis
+          </p>
+        </motion.div>
+
+        {/* ---------------- TOTAL COST PANEL ---------------- */}
+        <motion.div
+          variants={fadeUp}
+          className="p-10 bg-white rounded-3xl shadow-xl border border-gray-200"
+        >
+          <h3 className="text-2xl font-bold mb-4">Total Estimated Cost</h3>
+
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            className="text-center"
+          >
+            <div className="text-6xl font-extrabold text-indigo-600">
+              ₹{estimateResult.totalCost.toLocaleString()}
+            </div>
+            <p className="text-gray-500 mt-2">
+              {estimateResult.confidence}% confidence score
+            </p>
+          </motion.div>
+        </motion.div>
+
+        {/* ---------------- COST BREAKDOWN ---------------- */}
+        <motion.div
+          variants={fadeUp}
+          className="p-10 bg-white rounded-3xl shadow-xl border border-gray-200"
+        >
+          <h3 className="text-2xl font-bold mb-6">
+            Cost Breakdown (AI-Weighted)
+          </h3>
+
+          <div className="space-y-4">
+            {Object.entries(estimateResult.breakdown).map(
+              ([category, amount], index) => (
+                <motion.div
+                  key={category}
+                  initial={{ opacity: 0, x: -30 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: index * 0.1 }}
+                  className="p-5 flex justify-between items-center rounded-xl bg-gray-50 border border-gray-200"
+                >
+                  <span className="font-semibold text-gray-700 capitalize">
+                    {category.replace(/([A-Z])/g, " $1")}
+                  </span>
+                  <span className="text-indigo-600 font-bold text-lg">
+                    ₹{amount.toLocaleString()}
+                  </span>
+                </motion.div>
+              )
+            )}
+          </div>
+        </motion.div>
+
+        {/* ---------------- TIMELINE ---------------- */}
+        <motion.div
+          variants={fadeUp}
+          className="p-10 bg-white rounded-3xl shadow-xl border border-gray-200"
+        >
+          <h3 className="text-2xl font-bold mb-4">Project Timeline</h3>
+
+          <div className="text-center">
+            <div className="text-5xl text-green-600 font-bold">
+              {estimateResult.timeline} weeks
+            </div>
+            <p className="text-gray-500 mt-2">Estimated Completion Time</p>
+          </div>
+        </motion.div>
+
+        {/* ---------------- AI INSIGHTS ---------------- */}
+        <motion.div
+          variants={fadeUp}
+          className="p-10 bg-white rounded-3xl shadow-xl border border-gray-200"
+        >
+          <h3 className="text-2xl font-bold mb-6 flex items-center gap-3">
+            <FaRobot className="text-purple-600" />
+            AI Insights & Recommendations
+          </h3>
+
+          <div className="grid gap-4">
+            {estimateResult.aiInsights.map((insight, index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, x: 40 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: index * 0.1 }}
+                className="p-5 rounded-xl bg-purple-50 text-gray-800 border border-purple-200 flex gap-4"
+              >
+                <FaRobot className="text-purple-600 text-xl mt-1" />
+                <span>{insight}</span>
+              </motion.div>
+            ))}
+          </div>
+        </motion.div>
+
+        {/* ---------------- MARKET COMPARISON ---------------- */}
+        <motion.div
+          variants={fadeUp}
+          className="p-10 bg-white rounded-3xl shadow-xl border border-gray-200"
+        >
+          <h3 className="text-2xl font-bold mb-6">Market Comparison</h3>
+
+          <p className="text-gray-600 mb-4">
+            How your estimated cost compares to the real market:
+          </p>
+
+          <div className="space-y-4">
+            <div className="flex justify-between text-sm font-semibold">
+              <span>Low Market Rate</span>
+              <span>
+                ₹{Math.round(estimateResult.totalCost * 0.85).toLocaleString()}
+              </span>
+            </div>
+
+            <div className="h-3 bg-gray-200 rounded-full overflow-hidden">
+              <motion.div
+                initial={{ width: 0 }}
+                animate={{
+                  width: "50%",
+                }}
+                transition={{ duration: 1 }}
+                className="h-3 bg-green-400 rounded-full"
+              />
+            </div>
+
+            <div className="flex justify-between text-sm font-semibold">
+              <span>High Market Rate</span>
+              <span>
+                ₹{Math.round(estimateResult.totalCost * 1.3).toLocaleString()}
+              </span>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* ---------------- WHAT INCREASES COST ---------------- */}
+        <motion.div
+          variants={fadeUp}
+          className="p-10 rounded-3xl bg-white border border-gray-200 shadow-xl"
+        >
+          <h3 className="text-2xl font-bold mb-6">What Increased Your Cost?</h3>
+
+          <ul className="space-y-3 text-gray-700">
+            {projectType === "ai" && (
+              <li>• AI projects typically require senior developers & data experts.</li>
+            )}
+            {complexity === "high" && (
+              <li>• High complexity adds architecture, integrations, and extra testing.</li>
+            )}
+            {duration > 12 && <li>• Long timelines increase labor cost.</li>}
+            {teamSize > 5 && <li>• Large teams require additional coordination overhead.</li>}
+          </ul>
+        </motion.div>
+
+        {/* ---------------- ACTION BUTTONS ---------------- */}
+        <motion.div
+          variants={fadeUp}
+          className="flex flex-col sm:flex-row gap-4 justify-center mt-10"
+        >
+          <button
+            onClick={handleDownloadEstimate}
+            className="px-8 py-4 bg-green-600 text-white rounded-xl font-bold shadow-lg hover:bg-green-700 flex items-center gap-2"
+          >
+            <FaDownload /> Download Estimate (JSON)
+          </button>
+
+          <button
+            onClick={() => navigate("/contact")}
+            className="px-8 py-4 bg-indigo-600 text-white rounded-xl font-bold shadow-lg hover:bg-indigo-700 flex items-center gap-2"
+          >
+            <FaShare /> Request Detailed Proposal
+          </button>
+
+          <button
+            onClick={() => navigate("/dashboard")}
+            className="px-8 py-4 border-2 border-indigo-600 text-indigo-600 rounded-xl font-bold hover:bg-indigo-600 hover:text-white shadow-lg"
+          >
+            View Dashboard
+          </button>
+        </motion.div>
+      </motion.div>
+    );
+  };
+
+

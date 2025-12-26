@@ -648,11 +648,17 @@ const AuthPage = () => {
             <div>
               <div className="flex items-center justify-between mb-4">
                 <Link to="/" className="flex items-center gap-2 group">
+<<<<<<< HEAD
                   <img
                     src="/assets/logo (2).png"
                     alt="Predicto Logo"
                     className="w-9 h-9 rounded-2xl shadow-md shadow-cyan-500/40 group-hover:shadow-cyan-400/70 transition-all"
                   />
+=======
+                  <div className="w-9 h-9 rounded-2xl bg-gradient-to-br from-cyan-500 via-sky-500 to-indigo-500 flex items-center justify-center text-xs font-bold shadow-md shadow-cyan-500/40 group-hover:shadow-cyan-400/70 transition-all">
+                    P
+                  </div>
+>>>>>>> 2acc9a14a600b6d24041116ca1f1a14bb81ccf1b
                   <div>
                     <p className="text-xs uppercase tracking-[0.18em] text-slate-400">
                       Predicto.ai

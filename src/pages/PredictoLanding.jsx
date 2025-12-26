@@ -1,10 +1,14 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
+<<<<<<< HEAD
 import { ArrowRight, Sparkles, Cpu, CheckCircle, Star, Quote } from "lucide-react";
 import TestimonialModal from "../components/TestimonialModal";
 import VideoTestimonial from "../components/VideoTestimonial";
 import EnhancedTestimonials from "../components/EnhancedTestimonials";
+=======
+import { ArrowRight, Sparkles, Cpu, CheckCircle } from "lucide-react";
+>>>>>>> 2acc9a14a600b6d24041116ca1f1a14bb81ccf1b
 
 // ========= Animation helpers =========
 const fadeUp = (delay = 0) => ({
@@ -45,6 +49,7 @@ export default function PredictoAIModern() {
         <div className="absolute -bottom-40 right-[-120px] h-96 w-96 rounded-full bg-indigo-200/60 blur-3xl" />
         <div className="absolute top-1/3 left-1/2 h-64 w-64 -translate-x-1/2 rounded-full bg-cyan-100/50 blur-3xl" />
       </div>
+<<<<<<< HEAD
 
       {/* Mouse spotlight */}
       <motion.div
@@ -88,6 +93,349 @@ export default function PredictoAIModern() {
 
         <Link
           to="/login"
+          className="hidden md:inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-semibold bg-gray-900 text-white hover:bg-black transition-all shadow-sm hover:shadow-md"
+        >
+          Launch Estimator
+          <ArrowRight className="w-3.5 h-3.5" />
+        </Link>
+      </nav>
+
+      {/* ========================== HERO ========================== */}
+      <section className="relative">
+        {/* hero gradient band */}
+        <div className="absolute inset-x-0 top-0 h-[520px] bg-gradient-to-br from-gray-100 via-gray-200 to-gray-300 -z-10" />
+
+        <div className="max-w-7xl mx-auto px-6 lg:px-12 pt-14 pb-20 lg:pt-20 lg:pb-24 grid lg:grid-cols-2 gap-14 items-center">
+          {/* LEFT SIDE */}
+          <motion.div
+            {...fadeIn(0)}
+            className="relative text-gray-900 space-y-7"
+          >
+            <motion.div
+              {...fadeUp(0.1)}
+              className="inline-flex items-center gap-2 rounded-full border border-gray-300 bg-gray-100 px-4 py-1.5 backdrop-blur-md text-[11px] font-medium tracking-[0.18em] uppercase text-gray-900"
+            >
+              <Sparkles className="w-3.5 h-3.5 text-amber-600" />
+              AI PROJECT INTELLIGENCE
+            </motion.div>
+
+            <motion.h2
+              {...fadeUp(0.25)}
+              className="text-3xl sm:text-4xl lg:text-5xl xl:text-[52px] font-semibold leading-tight tracking-tight"
+            >
+              Make{" "}
+              <span className="bg-gradient-to-r from-sky-300 via-cyan-200 to-emerald-200 bg-clip-text text-transparent">
+                estimates
+              </span>{" "}
+              as reliable as your{" "}
+              <span className="bg-gradient-to-r from-amber-200 to-rose-200 bg-clip-text text-transparent">
+                delivery.
+              </span>
+            </motion.h2>
+
+            <motion.p
+              {...fadeUp(0.4)}
+              className="text-sm sm:text-base text-gray-700 max-w-xl leading-relaxed"
+            >
+              Predicto.ai turns rough project briefs into defensible, data-driven
+              cost, effort, and timeline forecasts—ready for stakeholders, investors
+              and delivery teams.
+            </motion.p>
+
+            <motion.div
+              {...fadeUp(0.55)}
+              className="flex flex-col sm:flex-row gap-3 pt-2"
+            >
+              <Link
+                to="/estimate"
+                className="group inline-flex items-center justify-center gap-2 rounded-full px-6 py-3 text-sm font-semibold bg-white text-gray-900 shadow-lg shadow-slate-900/30 hover:shadow-xl hover:-translate-y-0.5 transition-all"
+              >
+                Start a sample estimate
+                <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+              </Link>
+              <Link
+                to="/contact"
+                className="inline-flex items-center justify-center gap-2 rounded-full px-6 py-3 text-sm font-semibold border border-gray-300 text-gray-900 hover:bg-gray-100 transition-all"
+              >
+                Talk to our team
+                <Cpu className="w-4 h-4" />
+              </Link>
+            </motion.div>
+
+            <motion.div
+              {...fadeUp(0.7)}
+              className="flex flex-wrap gap-4 text-[11px] text-gray-700 pt-3"
+            >
+              <div className="flex items-center gap-1.5">
+                <CheckCircle className="w-3.5 h-3.5 text-emerald-600" />
+                <span>No credit card required</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <CheckCircle className="w-3.5 h-3.5 text-emerald-600" />
+                <span>14-day guided pilot</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <CheckCircle className="w-3.5 h-3.5 text-emerald-600" />
+                <span>Security & NDA ready</span>
+              </div>
+            </motion.div>
+          </motion.div>
+
+          {/* RIGHT SIDE – GLASS PANEL / DASHBOARD */}
+          <motion.div
+            {...fadeUp(0.3)}
+            className="relative"
+            whileHover={{ y: -4, scale: 1.01 }}
+            transition={{ type: "spring", stiffness: 120, damping: 18 }}
+          >
+            <div className="absolute -inset-4 rounded-3xl bg-gradient-to-tr from-sky-400/25 via-indigo-400/15 to-emerald-300/25 blur-2xl opacity-90" />
+            <div className="relative rounded-3xl bg-slate-950/85 text-slate-50 border border-white/10 shadow-2xl backdrop-blur-2xl p-5 sm:p-6 overflow-hidden">
+              {/* subtle shine */}
+              <div className="pointer-events-none absolute -top-10 left-1/4 h-24 w-2/3 bg-gradient-to-r from-white/10 via-white/30 to-white/10 opacity-50 blur-3xl" />
+
+              {/* Top bar */}
+              <div className="flex items-center justify-between mb-5 relative z-10">
+                <div>
+                  <p className="text-[11px] uppercase tracking-[0.18em] text-slate-400">
+                    Portfolio snapshot
+                  </p>
+                  <p className="text-xs text-slate-300 mt-0.5">
+                    Q2 strategic initiatives • Updated 3 mins ago
+                  </p>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-400" />
+                  <span className="w-2.5 h-2.5 rounded-full bg-amber-300" />
+                  <span className="w-2.5 h-2.5 rounded-full bg-rose-400" />
+                </div>
+              </div>
+
+              {/* Summary cards */}
+              <div className="grid grid-cols-3 gap-3 mb-5 relative z-10">
+                <div className="rounded-2xl bg-slate-900/85 border border-slate-700/70 p-3">
+                  <p className="text-[11px] text-slate-400 mb-1">
+                    Total forecast
+                  </p>
+                  <p className="text-sm font-semibold">$3.2M</p>
+                  <p className="text-[10px] text-emerald-300 mt-0.5">
+                    ↓ 14% vs last cycle
+                  </p>
+                </div>
+                <div className="rounded-2xl bg-slate-900/85 border border-slate-700/70 p-3">
+                  <p className="text-[11px] text-slate-400 mb-1">
+                    Avg. duration
+                  </p>
+                  <p className="text-sm font-semibold">16 weeks</p>
+                  <p className="text-[10px] text-amber-300 mt-0.5">
+                    3 projects at risk
+                  </p>
+                </div>
+                <div className="rounded-2xl bg-slate-900/85 border border-slate-700/70 p-3">
+                  <p className="text-[11px] text-slate-400 mb-1">
+                    Confidence
+                  </p>
+                  <p className="text-sm font-semibold">High</p>
+                  <p className="text-[10px] text-sky-300 mt-0.5">
+                    Based on 480+ projects
+                  </p>
+                </div>
+              </div>
+
+              {/* Bar list */}
+              <div className="mb-5 relative z-10">
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-[11px] text-slate-400">
+                    Estimate vs actual (last 6 programs)
+                  </p>
+                  <span className="text-[10px] text-emerald-300 bg-emerald-900/40 px-2 py-0.5 rounded-full border border-emerald-500/40">
+                    92% forecast accuracy
+                  </span>
+                </div>
+
+                <div className="space-y-2.5">
+                  {[
+                    {
+                      name: "Digital onboarding",
+                      status: "On track",
+                      width: "80%",
+                      color: "bg-sky-400",
+                    },
+                    {
+                      name: "Data platform revamp",
+                      status: "+4.2%",
+                      width: "88%",
+                      color: "bg-amber-400",
+                    },
+                    {
+                      name: "Global payments rollout",
+                      status: "-2.1%",
+                      width: "76%",
+                      color: "bg-emerald-400",
+                    },
+                  ].map((row, index) => (
+                    <div key={index}>
+                      <div className="flex justify-between text-[11px] mb-0.5">
+                        <span className="text-slate-200">{row.name}</span>
+                        <span className="text-slate-300">{row.status}</span>
+                      </div>
+                      <div className="w-full h-1.5 rounded-full bg-slate-800/90 overflow-hidden">
+                        <motion.div
+                          className={`h-1.5 rounded-full ${row.color}`}
+                          initial={{ width: 0 }}
+                          whileInView={{ width: row.width }}
+                          viewport={{ once: true }}
+                          transition={{ duration: 0.8, delay: 0.1 + index * 0.1 }}
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Bottom row */}
+              <div className="flex items-center justify-between pt-1 relative z-10">
+                <div className="flex -space-x-2">
+                  {["PM", "ENG", "FIN"].map((label, idx) => (
+                    <div
+                      key={idx}
+                      className="w-7 h-7 rounded-full bg-slate-900 border border-slate-700 flex items-center justify-center text-[10px] text-slate-100"
+                    >
+                      {label}
+                    </div>
+                  ))}
+                </div>
+                <p className="text-[11px] text-slate-400">
+                  Shared with{" "}
+                  <span className="text-slate-100 font-medium">
+                    Delivery & Finance
+                  </span>
+                </p>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* ================= TRUST STRIP ================= */}
+      <section className="bg-white border-y border-gray-200">
+        <div className="max-w-6xl mx-auto px-6 lg:px-12 py-6 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-gray-600">
+          <p className="font-medium text-gray-700">
+            Trusted by delivery, PMO and finance teams across industries
+          </p>
+          <div className="flex flex-wrap gap-4 tracking-wide uppercase">
+            <span className="text-gray-500">Enterprise IT</span>
+            <span className="text-gray-500">Consulting</span>
+            <span className="text-gray-500">Fintech</span>
+            <span className="text-gray-500">SaaS</span>
+          </div>
+=======
+
+      {/* Mouse spotlight */}
+      <motion.div
+        className="pointer-events-none fixed inset-0 -z-10"
+        animate={{
+          background: `radial-gradient(circle at ${cursorPos.x}px ${cursorPos.y}px, rgba(59,130,246,0.12), transparent 55%)`,
+        }}
+        transition={{ type: "spring", stiffness: 80, damping: 30 }}
+      />
+
+      {/* ========================== NAVBAR ========================== */}
+      <nav className="flex justify-between items-center px-6 lg:px-12 py-4 lg:py-5 sticky top-0 z-50 backdrop-blur-xl bg-white/80 border-b border-gray-200/70 shadow-sm">
+        <div className="flex items-center gap-2">
+          <div className="h-9 w-9 rounded-2xl bg-gradient-to-br from-blue-600 via-indigo-500 to-cyan-400 shadow-md shadow-blue-300/60" />
+          <h1 className="text-2xl lg:text-3xl font-extrabold bg-gradient-to-r from-gray-900 via-gray-800 to-gray-700 bg-clip-text text-transparent tracking-tight">
+            Predicto<span className="text-blue-600">.ai</span>
+          </h1>
+        </div>
+
+        <div className="hidden md:flex gap-8 text-sm font-medium text-gray-700">
+          <Link to="/" className="hover:text-blue-600 transition-colors">
+            Home
+          </Link>
+          <Link to="/features" className="hover:text-blue-600 transition-colors">
+            Features
+          </Link>
+          <Link to="/estimate" className="hover:text-blue-600 transition-colors">
+            Estimate
+          </Link>
+          <Link to="/services" className="hover:text-blue-600 transition-colors">
+            Services
+          </Link>
+          <Link to="/contact" className="hover:text-blue-600 transition-colors">
+            Contact
+          </Link>
+>>>>>>> 2acc9a14a600b6d24041116ca1f1a14bb81ccf1b
+        </div>
+
+<<<<<<< HEAD
+      {/* ================= FEATURES ================= */}
+      <section className="py-20 bg-[#F3F4F8]">
+        <motion.div
+          {...fadeUp(0.05)}
+          className="max-w-6xl mx-auto px-6 lg:px-12 mb-12 flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6"
+        >
+          <div>
+            <h3 className="text-3xl lg:text-4xl font-semibold text-gray-900 mb-3">
+              One platform for estimation, planning & governance
+            </h3>
+            <p className="text-sm sm:text-base text-gray-700 max-w-2xl">
+              Bring consistency to how projects are sized, funded and tracked—from
+              early-stage shaping to portfolio steering committees.
+            </p>
+          </div>
+          <p className="text-xs text-gray-600">
+            Built for teams running multiple concurrent programs and initiatives.
+          </p>
+        </motion.div>
+
+        <div className="max-w-6xl mx-auto px-6 lg:px-12 grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {[
+            {
+              title: "AI cost & effort",
+              desc: "Context-aware models analyse scope, complexity and historical velocity.",
+              icon: "💡",
+            },
+            {
+              title: "Risk-aware timelines",
+              desc: "Probability-based schedules with clear risk bands and milestone health.",
+              icon: "📈",
+            },
+            {
+              title: "Cross-team alignment",
+              desc: "One shared view for delivery, finance & leadership to agree on.",
+              icon: "🤝",
+            },
+            {
+              title: "Audit-ready history",
+              desc: "Every assumption, change and approval tracked for future reference.",
+              icon: "🗂️",
+            },
+          ].map((item, index) => (
+            <motion.div
+              key={item.title}
+              {...fadeUp(0.1 + index * 0.05)}
+              whileHover={{ y: -6, scale: 1.03 }}
+              transition={{ type: "spring", stiffness: 140, damping: 18 }}
+              className="relative bg-white rounded-2xl border border-gray-200/80 shadow-sm hover:shadow-xl transition-all p-5 overflow-hidden"
+            >
+              <div className="absolute -top-10 right-0 w-24 h-24 bg-gradient-to-br from-blue-100 to-indigo-100 opacity-40 blur-2xl" />
+              <div className="inline-flex items-center justify-center mb-4 rounded-xl bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-100 px-3 py-2 text-xl">
+                {item.icon}
+              </div>
+              <h4 className="text-sm font-semibold text-gray-900 mb-1.5">
+                {item.title}
+              </h4>
+              <p className="text-xs text-gray-700 leading-relaxed">
+                {item.desc}
+              </p>
+            </motion.div>
+          ))}
+        </div>
+      </section>
+
+=======
+        <Link
+          to="/estimate"
           className="hidden md:inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-semibold bg-gray-900 text-white hover:bg-black transition-all shadow-sm hover:shadow-md"
         >
           Launch Estimator
@@ -391,6 +739,7 @@ export default function PredictoAIModern() {
         </div>
       </section>
 
+>>>>>>> 2acc9a14a600b6d24041116ca1f1a14bb81ccf1b
       {/* ================= PIPELINE ================= */}
       <section className="py-20 bg-white border-y border-gray-200">
         <motion.div
@@ -655,6 +1004,7 @@ export default function PredictoAIModern() {
       </section>
 
       {/* ================= FOOTER ================= */}
+<<<<<<< HEAD
       <footer className="bg-white border-t border-gray-200 py-8">
         <div className="max-w-6xl mx-auto px-6 lg:px-12">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
@@ -671,6 +1021,10 @@ export default function PredictoAIModern() {
             </p>
           </div>
         </div>
+=======
+      <footer className="bg-white border-t border-gray-200 py-6 text-center text-[11px] text-gray-600">
+        © {new Date().getFullYear()} Predicto.ai — Retouch IT Services Pvt Ltd. All rights reserved.
+>>>>>>> 2acc9a14a600b6d24041116ca1f1a14bb81ccf1b
       </footer>
     </div>
   );

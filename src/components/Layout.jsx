@@ -35,17 +35,31 @@ export default function Layout({ children, dark, setDark }) {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, ease: "easeOut" }}
+<<<<<<< HEAD
         className={`pt-20 transition-all duration-500 ease-in-out ${
           isCollapsed ? 'ml-16' : 'ml-64'
         } min-h-screen flex flex-col`}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex-grow">
+=======
+        className={`pt-20 pb-8 transition-all duration-500 ease-in-out ${
+          isCollapsed ? 'ml-16' : 'ml-64'
+        } min-h-screen`}
+      >
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+>>>>>>> 2acc9a14a600b6d24041116ca1f1a14bb81ccf1b
           <AnimatePresence mode="wait">
             {children}
           </AnimatePresence>
         </div>
+<<<<<<< HEAD
         <Footer />
       </motion.main>
+=======
+      </motion.main>
+
+      <Footer />
+>>>>>>> 2acc9a14a600b6d24041116ca1f1a14bb81ccf1b
     </div>
   );
 }

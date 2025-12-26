@@ -41,6 +41,11 @@ const fadeLeft = {
   animate: { opacity: 1, x: 0, transition: { duration: 0.6 } },
 };
 
+const fadeUp = {
+  initial: { opacity: 0, y: 20 },
+  animate: { opacity: 1, y: 0, transition: { duration: 0.6 } },
+};
+
 // -----------------------------------------------
 // AUTOSAVE TO LOCAL STORAGE
 // -----------------------------------------------
@@ -548,7 +553,17 @@ export default function UltraEstimator() {
   // STEP 4 — AI RESULTS PAGE (ULTRA PREMIUM OUTPUT)
   // -----------------------------------------------
   const ResultsStep = () => {
-    if (!estimateResult) return null;
+    if (!estimate) return null;
+
+    const handleDownloadEstimate = () => {
+      const dataStr = JSON.stringify(estimate, null, 2);
+      const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+      const exportFileDefaultName = 'estimate.json';
+      const linkElement = document.createElement('a');
+      linkElement.setAttribute('href', dataUri);
+      linkElement.setAttribute('download', exportFileDefaultName);
+      linkElement.click();
+    };
 
     return (
       <motion.div
@@ -582,43 +597,12 @@ export default function UltraEstimator() {
             className="text-center"
           >
             <div className="text-6xl font-extrabold text-indigo-600">
-              ₹{estimateResult.totalCost.toLocaleString()}
+              ₹{estimate.cost.toLocaleString()}
             </div>
             <p className="text-gray-500 mt-2">
-              {estimateResult.confidence}% confidence score
+              85% confidence score
             </p>
           </motion.div>
-        </motion.div>
-
-        {/* ---------------- COST BREAKDOWN ---------------- */}
-        <motion.div
-          variants={fadeUp}
-          className="p-10 bg-white rounded-3xl shadow-xl border border-gray-200"
-        >
-          <h3 className="text-2xl font-bold mb-6">
-            Cost Breakdown (AI-Weighted)
-          </h3>
-
-          <div className="space-y-4">
-            {Object.entries(estimateResult.breakdown).map(
-              ([category, amount], index) => (
-                <motion.div
-                  key={category}
-                  initial={{ opacity: 0, x: -30 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: index * 0.1 }}
-                  className="p-5 flex justify-between items-center rounded-xl bg-gray-50 border border-gray-200"
-                >
-                  <span className="font-semibold text-gray-700 capitalize">
-                    {category.replace(/([A-Z])/g, " $1")}
-                  </span>
-                  <span className="text-indigo-600 font-bold text-lg">
-                    ₹{amount.toLocaleString()}
-                  </span>
-                </motion.div>
-              )
-            )}
-          </div>
         </motion.div>
 
         {/* ---------------- TIMELINE ---------------- */}
@@ -630,74 +614,35 @@ export default function UltraEstimator() {
 
           <div className="text-center">
             <div className="text-5xl text-green-600 font-bold">
-              {estimateResult.timeline} weeks
+              {estimate.timeline} weeks
             </div>
             <p className="text-gray-500 mt-2">Estimated Completion Time</p>
           </div>
         </motion.div>
 
-        {/* ---------------- AI INSIGHTS ---------------- */}
+        {/* ---------------- TEAM STRUCTURE ---------------- */}
         <motion.div
           variants={fadeUp}
           className="p-10 bg-white rounded-3xl shadow-xl border border-gray-200"
         >
           <h3 className="text-2xl font-bold mb-6 flex items-center gap-3">
-            <FaRobot className="text-purple-600" />
-            AI Insights & Recommendations
+            <FaUsers className="text-blue-600" />
+            Recommended Team Structure
           </h3>
 
           <div className="grid gap-4">
-            {estimateResult.aiInsights.map((insight, index) => (
+            {estimate.team.map((role, index) => (
               <motion.div
                 key={index}
                 initial={{ opacity: 0, x: 40 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: index * 0.1 }}
-                className="p-5 rounded-xl bg-purple-50 text-gray-800 border border-purple-200 flex gap-4"
+                className="p-5 rounded-xl bg-blue-50 text-gray-800 border border-blue-200 flex gap-4"
               >
-                <FaRobot className="text-purple-600 text-xl mt-1" />
-                <span>{insight}</span>
+                <FaUsers className="text-blue-600 text-xl mt-1" />
+                <span>{role}</span>
               </motion.div>
             ))}
-          </div>
-        </motion.div>
-
-        {/* ---------------- MARKET COMPARISON ---------------- */}
-        <motion.div
-          variants={fadeUp}
-          className="p-10 bg-white rounded-3xl shadow-xl border border-gray-200"
-        >
-          <h3 className="text-2xl font-bold mb-6">Market Comparison</h3>
-
-          <p className="text-gray-600 mb-4">
-            How your estimated cost compares to the real market:
-          </p>
-
-          <div className="space-y-4">
-            <div className="flex justify-between text-sm font-semibold">
-              <span>Low Market Rate</span>
-              <span>
-                ₹{Math.round(estimateResult.totalCost * 0.85).toLocaleString()}
-              </span>
-            </div>
-
-            <div className="h-3 bg-gray-200 rounded-full overflow-hidden">
-              <motion.div
-                initial={{ width: 0 }}
-                animate={{
-                  width: "50%",
-                }}
-                transition={{ duration: 1 }}
-                className="h-3 bg-green-400 rounded-full"
-              />
-            </div>
-
-            <div className="flex justify-between text-sm font-semibold">
-              <span>High Market Rate</span>
-              <span>
-                ₹{Math.round(estimateResult.totalCost * 1.3).toLocaleString()}
-              </span>
-            </div>
           </div>
         </motion.div>
 
@@ -750,4 +695,19 @@ export default function UltraEstimator() {
     );
   };
 
-
+  // -----------------------------------------------
+  // MAIN RENDER
+  // -----------------------------------------------
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-indigo-50 py-12 px-4">
+      <div className="max-w-6xl mx-auto">
+        <AnimatePresence mode="wait">
+          {step === 1 && <ProjectTypeStep />}
+          {step === 2 && <ProjectDetailsStep />}
+          {step === 3 && <TechStackStep />}
+          {step === 4 && <ResultsStep />}
+        </AnimatePresence>
+      </div>
+    </div>
+  );
+}
